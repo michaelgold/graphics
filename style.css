@@ -101,11 +101,12 @@ footer p {
 
 a {
     color: inherit;
+    text-decoration: underline
 }
 
 a:hover {
     color: inherit;
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .poem-row > div > *:first-child {
