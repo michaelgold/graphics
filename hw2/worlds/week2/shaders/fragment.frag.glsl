@@ -13,9 +13,18 @@ const int NL = 2; // Number of light sources in the scene
 
 // Declarations of arrays for spheres, lights and phong shading:
 
-vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], W, vPrime;
+vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], V, W, vPrime, P;
 vec4 Sphere[NS], Specular[NS];
+float t;
 float fl = 1.0;
+
+
+float raySphere(vec3 V, vec3 W, vec4 S) {
+
+    vPrime = V - S.xyz;
+    return -(dot(W,vPrime)) - sqrt(pow(dot(W,vPrime), 2.0) - dot(vPrime,vPrime) + pow(S.w, 2.0) );
+
+}
 
 void main() {
     Ldir[0] = normalize(vec3(1.,1.,.5));
@@ -36,20 +45,18 @@ void main() {
 
 
     for (int i = 0; i < Sphere.length(); i++) {
-        vPrime = vPos - Sphere[i].xyz;
-
-
+        
+        
         W = normalize(vec3(vPos.x, vPos.y, -fl));
+        t = raySphere(vPos, W, Sphere[i]);
+        P = V + t * W;
 
 
-        fragColor = vec4(sqrt(W), 1.0);
+        fragColor = vec4(sqrt(P), 1.0);
 
     }
+    
 
 }
 
-float raySphere(vec3 V, vec3 W, vec4 S) {
 
-    return 1.0;
-
-}
