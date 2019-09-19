@@ -3,14 +3,19 @@ precision highp float; // HIGH PRECISION FLOATS
 
 uniform float uTime;   // TIME, IN SECONDS
 
+in vec3 vPos;     // -1 < vPos.x < +1
+// -1 < vPos.y < +1
+//      vPos.z == 0
 
+out vec4 fragColor; 
 const int NS = 2; // Number of spheres in the scene
 const int NL = 2; // Number of light sources in the scene
 
 // Declarations of arrays for spheres, lights and phong shading:
 
-vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS];
+vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], W, vPrime;
 vec4 Sphere[NS], Specular[NS];
+float fl = 1.0;
 
 void main() {
     Ldir[0] = normalize(vec3(1.,1.,.5));
@@ -29,5 +34,22 @@ void main() {
     Diffuse[1]  = vec3(.5,.5,0.);
     Specular[1] = vec4(1.,1.,1.,20.); // 4th value is specular power
 
-    
+
+    for (int i = 0; i < Sphere.length(); i++) {
+        vPrime = vPos - Sphere[i].xyz;
+
+
+        W = normalize(vec3(vPos.x, vPos.y, -fl));
+
+
+        fragColor = vec4(sqrt(W), 1.0);
+
+    }
+
+}
+
+float raySphere(vec3 V, vec3 W, vec4 S) {
+
+    return 1.0;
+
 }
