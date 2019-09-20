@@ -16,8 +16,8 @@ const int NL = 2; // Number of light sources in the scene
 vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], V, W, VV, P, N, color;
 vec4 Sphere[NS], Specular[NS];
 float t;
-float fl = 4.;
-
+float fl = 7.;
+ 
 
 float raySphere(vec3 V, vec3 W, vec4 S) {
     VV = V - S.xyz;
@@ -49,15 +49,15 @@ void main() {
     Ldir[0] = normalize(vec3(1.,1.,.8));
     Lcol[0] = vec3(1.,1.,1.);
 
-    Ldir[1] = normalize(vec3(-1.,0.,-2.));
+    Ldir[1] = normalize(vec3(-10.,0.,-10.));
     Lcol[1] = vec3(.1,.07,.05);
 
-    Sphere[0]   = vec4(.5, .7 - animate, .6, .4);
+    Sphere[0]   = vec4(.5, .7 - animate, .6, .5);
     Ambient[0]  = vec3(0.,.1,.1);
     Diffuse[0]  = vec3(0.,.5,.5);
     Specular[0] = vec4(0.,1.,1.,10.); // 4th value is specular power
 
-    Sphere[1]   = vec4(0,-animate,.6,.61);
+    Sphere[1]   = vec4(-0.3,animate,.6,.5);
     Ambient[1]  = vec3(.1,.1,0.);
     Diffuse[1]  = vec3(.5,.5,0.);
     Specular[1] = vec4(1.,1.,1.,20.); // 4th value is specular power
@@ -89,13 +89,14 @@ void main() {
                 diffuseComponent += Diffuse[i].rgb * max(0., dot(N,Lcol[j]));
             }
 
-        }
-        ambientComponent = P * (Ambient[i]);
+            ambientComponent = N * (Ambient[i]);
         
+
+        }
 
         color =   ambientComponent + diffuseComponent + specularComponent;
 
-        fragColor = vec4(sqrt(color), 1.0);
+        fragColor = vec4((color), 1.0);
 
     }
 }
