@@ -24,7 +24,7 @@ float raySphere(vec3 V, vec3 W, vec4 S) {
     
     float t = -(dot(W,VV)) - sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
     float tt = -(dot(W,VV)) + sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
-    if (t > 0. && t < tt) {
+    if (t > 0. && t <= tt) {
         return t;
     } else if (tt > 0. && tt < t ) {
         return tt;
@@ -65,14 +65,20 @@ void main() {
 
     for (int i = 0; i < Sphere.length(); i++) {
         
+
         V = vec3(0,0,fl);
         W = normalize(vec3(vPos.x, vPos.y, -fl));
         t = raySphere(V, W, Sphere[i]);
         float tMin = 1000.;
+
+        vec3 ambientComponent = vec3(0.,0.,0.);
+
+
         if (t > 0. && t < tMin) {
             P = V + t * W;
             N = normalize(P - Sphere[i].w);      
             tMin = t;
+            ambientComponent =  (Ambient[i]);
         }
         
         
@@ -80,8 +86,6 @@ void main() {
         vec3 specularComponent = vec3(0.,0.,0.);
         vec3 diffuseComponent = vec3(0.,0.,0.);
         
-        vec3 ambientComponent = vec3(0.,0.,0.);
-
         for (int j = 0; j < Lcol.length(); j++) {
             vec3 R = 2. * N * dot(N,Ldir[j]) - Ldir[j];
             if (!isInShadow(P, Ldir[j])){
@@ -93,7 +97,7 @@ void main() {
         
 
         }
-        ambientComponent = N * (Ambient[i]);
+        
 
         color =   ambientComponent + diffuseComponent + specularComponent;
 
@@ -101,5 +105,3 @@ void main() {
 
     }
 }
-
-
