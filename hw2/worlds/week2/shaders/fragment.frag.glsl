@@ -16,32 +16,47 @@ const int NL = 2; // Number of light sources in the scene
 vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], V, W, VV, P, N, color;
 vec4 Sphere[NS], Specular[NS];
 float t;
-float fl = 4.;
+float fl = 2.;
 
 
 float raySphere(vec3 V, vec3 W, vec4 S) {
     VV = V - S.xyz;
-    return -(dot(W,VV)) - sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
+    
+    float t = -(dot(W,VV)) - sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
+    float tt = -(dot(W,VV)) + sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
+    if (t > 0. && t < tt) {
+        return t;
+    } else if (tt > 0. && tt < t ) {
+        return tt;
+    } else {
+        return -1.;
+    }
+
 }
 
 bool isInShadow(vec3 P, vec3 L) {
+    for (int i = 0; i < NS; i++) {
+        if (raySphere(P, L, Sphere[i]) > 0.001) {
+            return true;
+        }
+    }
     return false;
     
 }
 
 void main() {
-    Ldir[0] = normalize(vec3(1.,1.,.5));
+    Ldir[0] = normalize(vec3(1.,1.,.8));
     Lcol[0] = vec3(1.,1.,1.);
 
     Ldir[1] = normalize(vec3(-1.,0.,-2.));
     Lcol[1] = vec3(.1,.07,.05);
 
-    Sphere[0]   = vec4(.2,0.,0.,.63);
+    Sphere[0]   = vec4(.2, sin(uTime), 0.5, .4);
     Ambient[0]  = vec3(0.,.1,.1);
     Diffuse[0]  = vec3(0.,.5,.5);
     Specular[0] = vec4(0.,1.,1.,10.); // 4th value is specular power
 
-    Sphere[1]   = vec4(-.6,.4,-.1,.41);
+    Sphere[1]   = vec4(sin(uTime),.4,.5,.51);
     Ambient[1]  = vec3(.1,.1,0.);
     Diffuse[1]  = vec3(.5,.5,0.);
     Specular[1] = vec4(1.,1.,1.,20.); // 4th value is specular power
@@ -61,10 +76,10 @@ void main() {
         
         
         vec3 E = -W;
-
-        
         vec3 specularComponent = vec3(0.,0.,0.);
         vec3 diffuseComponent = vec3(0.,0.,0.);
+        
+        vec3 ambientComponent = vec3(0.,0.,0.);
 
         for (int j = 0; j < Lcol.length(); j++) {
             vec3 R = 2. * N * dot(N,Ldir[j]) - Ldir[j];
@@ -74,18 +89,14 @@ void main() {
             }
 
         }
-
-        color +=  Ambient[i] + diffuseComponent + specularComponent;
-
-
+        ambientComponent += P * (Ambient[i]);
         
-        
+
+        color =   ambientComponent + diffuseComponent + specularComponent;
 
         fragColor = vec4(sqrt(color), 1.0);
 
     }
-    
-
 }
 
 
