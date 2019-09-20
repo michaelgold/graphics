@@ -89,10 +89,11 @@ void main() {
                 diffuseComponent += Diffuse[i].rgb * max(0., dot(N,Lcol[j]));
             }
 
-            ambientComponent = N * (Ambient[i]);
+            
         
 
         }
+        ambientComponent = N * (Ambient[i]);
 
         color =   ambientComponent + diffuseComponent + specularComponent;
 
