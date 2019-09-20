@@ -16,7 +16,7 @@ const int NL = 2; // Number of light sources in the scene
 vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], V, W, VV, P, N, color;
 vec4 Sphere[NS], Specular[NS];
 float t;
-float fl = 2.;
+float fl = 4.;
 
 
 float raySphere(vec3 V, vec3 W, vec4 S) {
@@ -45,18 +45,19 @@ bool isInShadow(vec3 P, vec3 L) {
 }
 
 void main() {
+    float animate = sin(uTime)/4.;
     Ldir[0] = normalize(vec3(1.,1.,.8));
     Lcol[0] = vec3(1.,1.,1.);
 
     Ldir[1] = normalize(vec3(-1.,0.,-2.));
     Lcol[1] = vec3(.1,.07,.05);
 
-    Sphere[0]   = vec4(.2, sin(uTime), 0.5, .4);
+    Sphere[0]   = vec4(.5, .7 - animate, .6, .4);
     Ambient[0]  = vec3(0.,.1,.1);
     Diffuse[0]  = vec3(0.,.5,.5);
     Specular[0] = vec4(0.,1.,1.,10.); // 4th value is specular power
 
-    Sphere[1]   = vec4(sin(uTime),.4,.5,.51);
+    Sphere[1]   = vec4(0,-animate,.6,.61);
     Ambient[1]  = vec3(.1,.1,0.);
     Diffuse[1]  = vec3(.5,.5,0.);
     Specular[1] = vec4(1.,1.,1.,20.); // 4th value is specular power
@@ -89,7 +90,7 @@ void main() {
             }
 
         }
-        ambientComponent += P * (Ambient[i]);
+        ambientComponent = P * (Ambient[i]);
         
 
         color =   ambientComponent + diffuseComponent + specularComponent;
