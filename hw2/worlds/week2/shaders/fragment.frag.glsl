@@ -19,19 +19,33 @@ float t;
 float fl = 7.;
  
 
-float raySphere(vec3 V, vec3 W, vec4 S) {
-    VV = V - S.xyz;
+float calculateMinT (float tCandidate[2]) {
+    float tMinInit = 1000.;
+    float tMin = tMinInit;
     
-    float t = -(dot(W,VV)) - sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
-    float tt = -(dot(W,VV)) + sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
-    if (t > 0. && t <= tt) {
-        return t;
-    } else if (tt > 0. && tt < t ) {
-        return tt;
+    for (int i = 0; i < tCandidate.length(); i++) {
+        if (tCandidate[i] < tMin && tCandidate[i] >= -1.) {
+            tMin = tCandidate[i];
+        }
+    }
+    
+    if (tMin < tMinInit) {
+        return tMin;
     } else {
         return -1.;
     }
+}
 
+float raySphere(vec3 V, vec3 W, vec4 S) {
+    VV = V - S.xyz;
+    
+    float sqrtResult = sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
+    
+    float tCandidate[2];
+    tCandidate[0] = -(dot(W,VV)) - sqrtResult;
+    tCandidate[1] = -(dot(W,VV)) + sqrtResult;
+    
+    return calculateMinT(tCandidate);
 }
 
 bool isInShadow(vec3 P, vec3 L) {
@@ -40,8 +54,7 @@ bool isInShadow(vec3 P, vec3 L) {
             return true;
         }
     }
-    return false;
-    
+    return false; 
 }
 
 void main() {
@@ -64,23 +77,18 @@ void main() {
 
 
     for (int i = 0; i < Sphere.length(); i++) {
-        
-
         V = vec3(0,0,fl);
         W = normalize(vec3(vPos.x, vPos.y, -fl));
         t = raySphere(V, W, Sphere[i]);
-        float tMin = 1000.;
-
         vec3 ambientComponent = vec3(0.,0.,0.);
-
-
+        
+        float tMin = 1000.;
         if (t > 0. && t < tMin) {
             P = V + t * W;
             N = normalize(P - Sphere[i].w);      
             tMin = t;
             ambientComponent =  (Ambient[i]);
         }
-        
         
         vec3 E = -W;
         vec3 specularComponent = vec3(0.,0.,0.);
@@ -92,13 +100,8 @@ void main() {
                 specularComponent += Specular[i].rgb * pow(max(0., dot(E,R)), Specular[i].w);
                 diffuseComponent += Diffuse[i].rgb * max(0., dot(N,Lcol[j]));
             }
-
-            
-        
-
         }
-        
-
+       
         color =   ambientComponent + diffuseComponent + specularComponent;
 
         fragColor = vec4((color), 1.0);
