@@ -58,6 +58,12 @@ async function setup(state) {
                 state.uViewLoc         = gl.getUniformLocation(program, 'uView');
                 state.uProjLoc         = gl.getUniformLocation(program, 'uProj');
                 state.uTimeLoc         = gl.getUniformLocation(program, 'uTime');
+                state.uMaterialsLoc = [];
+                state.uMaterialsLoc[0] = {};
+                state.uMaterialsLoc[0].diffuse  = gl.getUniformLocation(program, 'uMaterials[0].diffuse');
+                state.uMaterialsLoc[0].ambient  = gl.getUniformLocation(program, 'uMaterials[0].ambient');
+                state.uMaterialsLoc[0].specular  = gl.getUniformLocation(program, 'uMaterials[0].specular');
+                state.uMaterialsLoc[0].power  = gl.getUniformLocation(program, 'uMaterials[0].power');
             } 
         },
         {
@@ -111,6 +117,11 @@ function onStartFrame(t, state) {
 
     gl.uniform1f(state.uTimeLoc, time);
 
+    gl.uniform3fv(state.uMaterialsLoc[0].ambient , [.05,0,0]);
+    gl.uniform3fv(state.uMaterialsLoc[0].diffuse , [.5,0,0]);
+    gl.uniform3fv(state.uMaterialsLoc[0].specular, [.5,.5,.5]);
+    gl.uniform1f (state.uMaterialsLoc[0].power   , 20);
+
     gl.enable(gl.DEPTH_TEST);
 }
 
@@ -119,10 +130,14 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
 
     const my = state;
   
-    gl.uniformMatrix4fv(my.uModelLoc, false, new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,-1,1]));
+    newFunction(my);
     gl.uniformMatrix4fv(my.uViewLoc, false, new Float32Array(viewMat));
     gl.uniformMatrix4fv(my.uProjLoc, false, new Float32Array(projMat));
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+function newFunction(my) {
+    gl.uniformMatrix4fv(my.uModelLoc, false, new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -1, 1]));
 }
 
 function onEndFrame(t, state) {
