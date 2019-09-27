@@ -70,6 +70,7 @@ async function setup(state) {
                     state.uMaterialsLoc[i].diffuse  = gl.getUniformLocation(program, 'uMaterials['+i+'].diffuse');
                     state.uMaterialsLoc[i].ambient  = gl.getUniformLocation(program, 'uMaterials['+i+'].ambient');
                     state.uMaterialsLoc[i].specular  = gl.getUniformLocation(program, 'uMaterials['+i+'].specular');
+                    state.uMaterialsLoc[i].reflect  = gl.getUniformLocation(program, 'uMaterials['+i+'].reflect');
                     state.uMaterialsLoc[i].power  = gl.getUniformLocation(program, 'uMaterials['+i+'].power');
                     
                     state.uShapesLoc[i] = {};
@@ -134,6 +135,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[0].ambient , [.05,0,0]);
     gl.uniform3fv(state.uMaterialsLoc[0].diffuse , [.5,0,0]);
     gl.uniform3fv(state.uMaterialsLoc[0].specular, [.5,.5,.5]);
+    gl.uniform3fv(state.uMaterialsLoc[0].reflect , [.05,0,0]);
     gl.uniform1f (state.uMaterialsLoc[0].power   , 20);
 
     gl.uniform1f (state.uShapesLoc[0].type      , 0);
@@ -144,6 +146,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[1].ambient , [.1,.1,0]);
     gl.uniform3fv(state.uMaterialsLoc[1].diffuse , [.5,.5,0]);
     gl.uniform3fv(state.uMaterialsLoc[1].specular, [1.,1.,1.]);
+    gl.uniform3fv(state.uMaterialsLoc[1].reflect , [.1,.1,0]);
     gl.uniform1f (state.uMaterialsLoc[1].power   , 20);
 
     gl.uniform1f (state.uShapesLoc[1].type      , 0);
