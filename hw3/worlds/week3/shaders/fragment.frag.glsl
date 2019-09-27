@@ -3,6 +3,15 @@ precision highp float; // HIGH PRECISION FLOATS
 
 uniform float uTime;   // TIME, IN SECONDS
 
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float power;
+};
+
+
+
 in vec3 vPos;     // -1 < vPos.x < +1
 // -1 < vPos.y < +1
 //      vPos.z == 0
@@ -10,6 +19,16 @@ in vec3 vPos;     // -1 < vPos.x < +1
 out vec4 fragColor; 
 const int NS = 2; // Number of spheres in the scene
 const int NL = 2; // Number of light sources in the scene
+
+uniform Material uMaterials[NS];
+
+struct Shape {
+    int type; //0 sphere, 1 cube
+    vec3 center;
+    float size;
+};
+
+uniform Shape uShapes[NS];
 
 // Declarations of arrays for spheres, lights and phong shading:
 
@@ -19,11 +38,13 @@ float t;
 float fl = 7.;
  
 
-float raySphere(vec3 V, vec3 W, vec4 S) {
-    VV = V - S.xyz;
+
+
+float raySphere(vec3 V, vec3 W, Shape shape) {
+    VV = V - shape.center;
     
-    float t = -(dot(W,VV)) - sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
-    float tt = -(dot(W,VV)) + sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(S.w, 2.0));
+    float t = -(dot(W,VV)) - sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(shape.size, 2.0));
+    float tt = -(dot(W,VV)) + sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(shape.size, 2.0));
     if (t > 0. && t <= tt) {
         return t;
     } else if (tt > 0. && tt < t ) {
@@ -34,9 +55,9 @@ float raySphere(vec3 V, vec3 W, vec4 S) {
 
 }
 
-bool isInShadow(vec3 P, vec3 L) {
+bool isInShadow(vec3 P, vec3 L, Shape shape) {
     for (int i = 0; i < NS; i++) {
-        if (raySphere(P, L, Sphere[i]) > 0.001) {
+        if (raySphere(P, L, shape) > 0.001) {
             return true;
         }
     }
@@ -52,23 +73,14 @@ void main() {
     Ldir[1] = normalize(vec3(-10.,0.,-10.));
     Lcol[1] = vec3(.1,.07,.05);
 
-    Sphere[0]   = vec4(.5, .7 - animate, .6, .5);
-    Ambient[0]  = vec3(0.,.1,.1);
-    Diffuse[0]  = vec3(0.,.5,.5);
-    Specular[0] = vec4(0.,1.,1.,10.); // 4th value is specular power
-
-    Sphere[1]   = vec4(-0.3,animate,.6,.5);
-    Ambient[1]  = vec3(.1,.1,0.);
-    Diffuse[1]  = vec3(.5,.5,0.);
-    Specular[1] = vec4(1.,1.,1.,20.); // 4th value is specular power
 
 
-    for (int i = 0; i < Sphere.length(); i++) {
+    for (int i = 0; i < uShapes.length(); i++) {
         
 
         V = vec3(0,0,fl);
         W = normalize(vec3(vPos.x, vPos.y, -fl));
-        t = raySphere(V, W, Sphere[i]);
+        t = raySphere(V, W, uShapes[i]);
         float tMin = 1000.;
 
         vec3 ambientComponent = vec3(0.,0.,0.);
@@ -76,9 +88,9 @@ void main() {
 
         if (t > 0. && t < tMin) {
             P = V + t * W;
-            N = normalize(P - Sphere[i].w);      
+            N = normalize(P - uShapes[i].size);      
             tMin = t;
-            ambientComponent =  (Ambient[i]);
+            ambientComponent =  (uMaterials[i].ambient);
         }
         
         
@@ -88,9 +100,9 @@ void main() {
         
         for (int j = 0; j < Lcol.length(); j++) {
             vec3 R = 2. * N * dot(N,Ldir[j]) - Ldir[j];
-            if (!isInShadow(P, Ldir[j])){
-                specularComponent += Specular[i].rgb * pow(max(0., dot(E,R)), Specular[i].w);
-                diffuseComponent += Diffuse[i].rgb * max(0., dot(N,Lcol[j]));
+            if (!isInShadow(P, Ldir[j], uShapes[i])){
+                specularComponent += uMaterials[i].specular * pow(max(0., dot(E,R)), uMaterials[i].power);
+                diffuseComponent += uMaterials[i].diffuse * max(0., dot(N,Lcol[j]));
             }
 
             
