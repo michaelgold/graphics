@@ -86,9 +86,11 @@ void main() {
         vec3 ambientComponent = vec3(0.,0.,0.);
 
 
+
+
         if (t > 0. && t < tMin) {
             P = V + t * W;
-            N = normalize(P - uShapes[i].size);      
+            N = normalize(P - uShapes[i].center);      
             tMin = t;
             ambientComponent =  (uMaterials[i].ambient);
         }
