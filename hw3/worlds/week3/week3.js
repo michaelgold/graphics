@@ -132,26 +132,26 @@ function onStartFrame(t, state) {
 
     gl.uniform1f(state.uTimeLoc, time);
 
-    gl.uniform3fv(state.uMaterialsLoc[0].ambient , [.05,0,0]);
-    gl.uniform3fv(state.uMaterialsLoc[0].diffuse , [.5,0,0]);
-    gl.uniform3fv(state.uMaterialsLoc[0].specular, [.5,.5,.5]);
-    gl.uniform3fv(state.uMaterialsLoc[0].reflect , [.05,0,0]);
-    gl.uniform1f (state.uMaterialsLoc[0].power   , 20);
+    gl.uniform3fv(state.uMaterialsLoc[0].ambient , [.1,.1,0.]);
+    gl.uniform3fv(state.uMaterialsLoc[0].diffuse , [0.,.5,.5]);
+    gl.uniform3fv(state.uMaterialsLoc[0].specular, [0.,.1,.1]);
+    gl.uniform3fv(state.uMaterialsLoc[0].reflect , [0.,.1,.1]);
+    gl.uniform1f (state.uMaterialsLoc[0].power   , 10.);
 
     gl.uniform1f (state.uShapesLoc[0].type      , 0);
-    gl.uniform3fv(state.uShapesLoc[0].center , [.5,Math.sin(time),.6]);
-    gl.uniform1f (state.uShapesLoc[0].size      , .5);
+    gl.uniform3fv(state.uShapesLoc[0].center , [.2,Math.sin(time)/2,-0.1]);
+    gl.uniform1f (state.uShapesLoc[0].size      , .3);
 
 
-    gl.uniform3fv(state.uMaterialsLoc[1].ambient , [.1,.1,0]);
+    gl.uniform3fv(state.uMaterialsLoc[1].ambient , [.1,.1,0.]);
     gl.uniform3fv(state.uMaterialsLoc[1].diffuse , [.5,.5,0]);
     gl.uniform3fv(state.uMaterialsLoc[1].specular, [1.,1.,1.]);
-    gl.uniform3fv(state.uMaterialsLoc[1].reflect , [.1,.1,0]);
-    gl.uniform1f (state.uMaterialsLoc[1].power   , 20);
+    gl.uniform3fv(state.uMaterialsLoc[1].reflect , [.1,.1,0.]);
+    gl.uniform1f (state.uMaterialsLoc[1].power   , 20.);
 
     gl.uniform1f (state.uShapesLoc[1].type      , 0);
-    gl.uniform3fv(state.uShapesLoc[1].center , [-0.3,0.,.5]);
-    gl.uniform1f (state.uShapesLoc[1].size      , .5);
+    gl.uniform3fv(state.uShapesLoc[1].center , [Math.sin(time)/2,.4,.4]);
+    gl.uniform1f (state.uShapesLoc[1].size      , .3);
 
 
     gl.enable(gl.DEPTH_TEST);

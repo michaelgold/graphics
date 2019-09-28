@@ -33,22 +33,43 @@ uniform Shape uShapes[NS];
 vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], V, W, VV, P, N, color;
 vec4 Sphere[NS], Specular[NS];
 float t;
-float fl = 7.;
+float fl = 3.;
 
 vec2 sortRoots(float roots[2]) { 
-    if (roots[0] > 0. && roots[0] <= roots[1]) {
-        return vec2(roots[0], roots[1]);
-    } else if (roots[1] > 0. && roots[1] < roots[0] ) {
-        return vec2(roots[1], roots[0]);
-    } else {
-        return vec2(-1., -1.);
+    // if ((roots[0] > 0.) && (roots[0] <= roots[1])) {
+    //     return vec2(roots[0], roots[1]);
+    // } else if (roots[1] > 0. && roots[1] < roots[0] ) {
+    //     return vec2(roots[1], roots[0]);
+    // } else {
+    //     return vec2(-1., -1.);
+    // }
+
+    float tMin = 1000.;
+    int minIndex = -1;
+
+    for (int i = 0; i < 2; i++) {
+        if ((roots[i] >= -2.) && (roots[i] < tMin))  {
+            tMin = roots[i];
+            minIndex = i;
+        }
     }
+
+    switch (minIndex) {
+        case 0:
+            return vec2(roots[0], roots[1]);
+        case 1:
+            return vec2(roots[1], roots[0]);
+        case -2:
+            return vec2(-1., -1.);
+    }
+    
 }
+        
 
 vec2 rayShape(vec3 V, vec3 W, Shape shape) {
     VV = V - shape.center;
     
-    float rootPart = sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + shape.size * shape.size);
+    float rootPart = sqrt( (dot(W,VV) * dot(W,VV))  - dot(VV,VV) + (shape.size * shape.size));
     float roots[2];
     roots[0] = -(dot(W,VV)) - rootPart;
     roots[1] = -(dot(W,VV)) + rootPart;
@@ -56,9 +77,9 @@ vec2 rayShape(vec3 V, vec3 W, Shape shape) {
     return sortRoots(roots);
 }
 
-bool isInShadow(vec3 P, vec3 L, Shape shape) {
+bool isInShadow(vec3 P, vec3 L) {
     for (int i = 0; i < NS; i++) {
-        if (rayShape(P, L, shape).x > 0.001) {
+        if (rayShape(P, L, uShapes[i]).x > 0.001) {
             return true;
         }
     }
@@ -66,14 +87,13 @@ bool isInShadow(vec3 P, vec3 L, Shape shape) {
 }
 
 void main() {
-    float animate = sin(uTime)/4.;
-    Ldir[0] = normalize(vec3(1.,1.,.8));
+    Ldir[0] = normalize(vec3(1.,1.,.5));
     Lcol[0] = vec3(1.,1.,1.);
 
-    Ldir[1] = normalize(vec3(-10.,0.,-10.));
+    Ldir[1] = normalize(vec3(-1.,0.,-2.));
     Lcol[1] = vec3(.1,.07,.05);
 
-
+    float tMin = 1000.;
 
     for (int i = 0; i < uShapes.length(); i++) {
         
@@ -81,7 +101,7 @@ void main() {
         V = vec3(0,0,fl);
         W = normalize(vec3(vPos.x, vPos.y, -fl));
         t = rayShape(V, W, uShapes[i]).x;
-        float tMin = 1000.;
+        
 
         vec3 ambientComponent = vec3(0.,0.,0.);
 
@@ -92,28 +112,34 @@ void main() {
             P = V + t * W;
             N = normalize(P - uShapes[i].center);      
             tMin = t;
-            ambientComponent =  (uMaterials[i].ambient);
-        }
-        
-        
-        vec3 E = -W;
-        vec3 specularComponent = vec3(0.,0.,0.);
-        vec3 diffuseComponent = vec3(0.,0.,0.);
-        
-        for (int j = 0; j < Lcol.length(); j++) {
-            vec3 R = 2. * N * dot(N,Ldir[j]) - Ldir[j];
-            if (!isInShadow(P, Ldir[j], uShapes[i])){
-                specularComponent += uMaterials[i].specular * pow(max(0., dot(E,R)), uMaterials[i].power);
-                diffuseComponent += uMaterials[i].diffuse * max(0., dot(N,Lcol[j]));
-            }
-
             
+            ambientComponent =  uMaterials[i].ambient;
+
+            vec3 E = -W;
+            vec3 specularComponent = vec3(0.,0.,0.);
+            vec3 diffuseComponent = vec3(0.,0.,0.);
         
 
+            for (int j = 0; j < Ldir.length(); j++) {
+                vec3 R = 2. * dot(N,Ldir[j]) * N - Ldir[j];
+                if (!isInShadow(P, Ldir[j])){
+                    specularComponent += Lcol[j] * (uMaterials[i].specular * pow(max(0., dot(E,R) ), uMaterials[i].power));
+                    diffuseComponent +=  Lcol[j] * (uMaterials[i].diffuse * max(0., dot(N,Lcol[j])));
+                }
+
+
+                
+            
+            color = ambientComponent + diffuseComponent + specularComponent;
+
+            }
         }
         
+        
 
-        color =   ambientComponent + diffuseComponent + specularComponent;
+
+        
+
 
         fragColor = vec4((color), 1.0);
 
