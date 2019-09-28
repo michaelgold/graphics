@@ -10,8 +10,6 @@ struct Material {
     float power;
 };
 
-
-
 in vec3 vPos;     // -1 < vPos.x < +1
 // -1 < vPos.y < +1
 //      vPos.z == 0
@@ -36,33 +34,35 @@ vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], V, W, VV, P, N, color;
 vec4 Sphere[NS], Specular[NS];
 float t;
 float fl = 7.;
- 
 
+vec2 sortRoots(float roots[2]) { 
+    if (roots[0] > 0. && roots[0] <= roots[1]) {
+        return vec2(roots[0], roots[1]);
+    } else if (roots[1] > 0. && roots[1] < roots[0] ) {
+        return vec2(roots[1], roots[0]);
+    } else {
+        return vec2(-1., -1.);
+    }
+}
 
-
-float raySphere(vec3 V, vec3 W, Shape shape) {
+vec2 rayShape(vec3 V, vec3 W, Shape shape) {
     VV = V - shape.center;
     
-    float t = -(dot(W,VV)) - sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(shape.size, 2.0));
-    float tt = -(dot(W,VV)) + sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + pow(shape.size, 2.0));
-    if (t > 0. && t <= tt) {
-        return t;
-    } else if (tt > 0. && tt < t ) {
-        return tt;
-    } else {
-        return -1.;
-    }
+    float rootPart = sqrt(pow(dot(W,VV), 2.0) - dot(VV,VV) + shape.size * shape.size);
+    float roots[2];
+    roots[0] = -(dot(W,VV)) - rootPart;
+    roots[1] = -(dot(W,VV)) + rootPart;
 
+    return sortRoots(roots);
 }
 
 bool isInShadow(vec3 P, vec3 L, Shape shape) {
     for (int i = 0; i < NS; i++) {
-        if (raySphere(P, L, shape) > 0.001) {
+        if (rayShape(P, L, shape).x > 0.001) {
             return true;
         }
     }
     return false;
-    
 }
 
 void main() {
@@ -80,7 +80,7 @@ void main() {
 
         V = vec3(0,0,fl);
         W = normalize(vec3(vPos.x, vPos.y, -fl));
-        t = raySphere(V, W, uShapes[i]);
+        t = rayShape(V, W, uShapes[i]).x;
         float tMin = 1000.;
 
         vec3 ambientComponent = vec3(0.,0.,0.);
