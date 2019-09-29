@@ -24,18 +24,19 @@ const int NL = 2; // Number of light sources in the scene
 uniform Material uMaterials[NS];
 
 struct Shape {
-    int type; //0 sphere, 1 cube
+    int type; //0 sphere, 1 poly
     vec3 center;
     float size;
+    int sides;
 };
 
 
-struct Cube {
-    vec4 plane[6];
+struct Poly {
+    vec4 plane[10];
 };
 
-Cube initCube(float r) {
-    Cube c;
+Poly initCube(float r) {
+    Poly c;
     c.plane[0] = vec4(-1.,  0.,  0., -r);
     c.plane[1] = vec4( 1.,  0.,  0., -r);
     c.plane[2] = vec4( 0., -1.,  0., -r);
@@ -44,6 +45,21 @@ Cube initCube(float r) {
     c.plane[5] = vec4( 0.,  0.,  1., -r);
     return c;
 }
+
+Poly initOctahedron(float r) {
+    Poly p;
+    float r3 = 1. / sqrt(3.);
+    p.plane[0] = vec4(-r3,  -r3,  -r3, -r);
+    p.plane[1] = vec4( r3,  -r3,  -r3, -r);
+    p.plane[2] = vec4(-r3,   r3,  -r3, -r);
+    p.plane[3] = vec4( r3,   r3,  -r3, -r);
+    p.plane[4] = vec4(-r3,  -r3,   r3, -r);
+    p.plane[5] = vec4( r3,  -r3,   r3, -r);
+    p.plane[6] = vec4(-r3,   r3,   r3, -r);
+    p.plane[7] = vec4( r3,   r3,   r3, -r);
+    return p;
+}
+
 
 uniform Shape uShapes[NS];
 
@@ -95,20 +111,29 @@ vec2 castRaytoSphere(vec3 V, vec3 W, Shape shape) {
     return sortRoots(roots);
 }
 
-vec2 castRaytoCube(vec3 V, vec3 W, Shape shape) {
+Poly initPoly (Shape shape) {
+    switch (shape.sides) {
+        case 6:
+            return initCube(shape.size / 2.);
+        case 8:
+            return initOctahedron(shape.size / 2.);
+    }
+}
+
+vec2 castRaytoPoly(vec3 V, vec3 W, Shape shape) {
     vec4 VV = vec4(V - shape.center, 1.);
     vec4 WW = vec4(W, 0.);
 
     float tMin = -1000.;
     float tMax = 1000.;
-    
-    Cube c = initCube(shape.size / 2.);
+
+    Poly poly = initPoly(shape);
 
     bool rayMissed = false;
 
-    for (int i = 0; i < c.plane.length(); i++ ) {
+    for (int i = 0; i < shape.sides; i++ ) {
 
-        vec4 P = c.plane[i];
+        vec4 P = poly.plane[i];
 
         float t = -(dot(P, VV)) / dot(P,WW);
 
@@ -122,7 +147,7 @@ vec2 castRaytoCube(vec3 V, vec3 W, Shape shape) {
             if (t > 0.) {
                 // case 2
                 if (t > tMin) {
-                    frontSurfaceNormal = c.plane[i].xyz;
+                    frontSurfaceNormal = poly.plane[i].xyz;
                     tMin = t;
                 }
             }
@@ -133,7 +158,7 @@ vec2 castRaytoCube(vec3 V, vec3 W, Shape shape) {
             if (t > 0.) {
                 // case 3
                 if (t < tMax) {
-                    rearSurfaceNormal = c.plane[i].xyz;
+                    rearSurfaceNormal = poly.plane[i].xyz;
                     tMax = t;
                 }
             }
@@ -149,8 +174,6 @@ vec2 castRaytoCube(vec3 V, vec3 W, Shape shape) {
     }
     
     return vec2(-1., -1.);
-    
-
  
 }
 
@@ -161,7 +184,7 @@ vec2 rayShape(vec3 V, vec3 W, Shape shape) {
         case 0:
             return castRaytoSphere(V, W, shape);
         case 1:
-            return castRaytoCube(V, W, shape);
+            return castRaytoPoly(V, W, shape);
     }
 }
 

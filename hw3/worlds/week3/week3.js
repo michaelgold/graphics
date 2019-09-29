@@ -79,6 +79,7 @@ async function setup(state) {
                     state.uShapesLoc[i].type =  gl.getUniformLocation(program, 'uShapes['+i+'].type');
                     state.uShapesLoc[i].center =  gl.getUniformLocation(program, 'uShapes['+i+'].center');
                     state.uShapesLoc[i].size =  gl.getUniformLocation(program, 'uShapes['+i+'].size');
+                    state.uShapesLoc[i].sides =  gl.getUniformLocation(program, 'uShapes['+i+'].sides');
                 }
 
             } 
@@ -145,6 +146,7 @@ function onStartFrame(t, state) {
     gl.uniform1i (state.uShapesLoc[0].type      , 0);
     gl.uniform3fv(state.uShapesLoc[0].center , [.2,Math.sin(time)/2,-0.1]);
     gl.uniform1f (state.uShapesLoc[0].size      , .4);
+    gl.uniform1i (state.uShapesLoc[0].sides      , 0);
 
 
     gl.uniform3fv(state.uMaterialsLoc[1].ambient , [.1,.1,0.]);
@@ -158,7 +160,7 @@ function onStartFrame(t, state) {
     gl.uniform1i (state.uShapesLoc[1].type      , 1);
     gl.uniform3fv(state.uShapesLoc[1].center , [Math.sin(time)/2,.4,.5]);
     gl.uniform1f (state.uShapesLoc[1].size      , .3);
-
+    gl.uniform1i (state.uShapesLoc[1].sides      , 8);
 
     gl.enable(gl.DEPTH_TEST);
 }
