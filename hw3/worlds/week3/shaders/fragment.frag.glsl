@@ -151,8 +151,12 @@ void main() {
                         M = uMaterials[j];
                         PP = P + t * WW;
                         NN = computeSurfaceNormal(PP, S);
-
+                        ttMin = tt;
                     }
+                }
+                if (ttMin < 1000.) {
+                    vec3 rgb = phongShading(PP, NN, S, M);
+                    color += rgb * uMaterials[i].reflect;
                 }
 
             }
