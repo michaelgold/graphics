@@ -9,6 +9,8 @@ struct Material {
     vec3 specular;
     float power;
     vec3 reflect;
+    vec3 transparent;        // Transparency color. Black means the object is opaque.
+    float indexOfRefraction; // Higher value means light will bend more as it refracts.
 };
 
 in vec3 vPos;     // -1 < vPos.x < +1
@@ -135,6 +137,17 @@ vec3 addReflection(Material material) {
     return vec3(0.,0.,0.);
 }
 
+vec3 refractRay(vec3 W, vec3 N, float indexOfRefraction) {
+
+    vec3 Wc = dot(W,N) * N;
+    vec3 Ws = W - Wc;
+    vec3 WWs = Ws / indexOfRefraction;
+    vec3 WWc = -N * sqrt(1. - dot(WWs,WWs));
+
+    vec3 WW = WWc + WWs;
+    return WW;
+}
+
 
 void main() {
     Ldir[0] = normalize(vec3(1.,1.,.5));
@@ -162,9 +175,49 @@ void main() {
             
             color = phongShading(P, N, uShapes[i], uMaterials[i]);
             color += addReflection(uMaterials[i]);
+
+
+            if (length(uMaterials[i].transparent) > 0.) {
+                // compute ray that refracts to shape
+
+                vec3 WW = refractRay(W, N, uMaterials[i].indexOfRefraction);
+
+                float tt = rayShape(P - WW / 1000., WW, uShapes[i]).y; // second root
+
+                // compute second refacted ray that goes out of shape
+
+                vec3 PP = P + tt * WW;
+                vec3 NN = computeSurfaceNormal(PP, uShapes[i]);
+                vec3 WWW = refractRay(WW, NN, 1. / uMaterials[i].indexOfRefraction);
+
+                // if emergent ray hits a shape, do Phong shading on nearest one to add color
+
+                Shape S;
+                Material M;
+                float tttMin = 1000.;
+                vec3 PPP, NNN;
+                for (int j = 0; j < NS; j++) {
+                    float ttt = rayShape(PP, WWW, uShapes[j]).x;
+                    if (ttt > .001 && ttt < tttMin) {
+                        S = uShapes[j];
+                        M = uMaterials[j];
+                        PPP = PP + tt * WWW;
+                        NNN = computeSurfaceNormal(PPP, S);
+                        tttMin = ttt;
+                    }
+                }
+                if (tttMin < 1000.) {
+                    vec3 rgb = phongShading(PPP, NNN, S, M);
+                    color += rgb * uMaterials[i].transparent;
+                }
+            }
+
+
+
+            
         }
         
-        fragColor = vec4((color), 1.0);
+        fragColor = vec4((color), 1.);
 
     }
 }
