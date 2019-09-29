@@ -18,7 +18,7 @@ in vec3 vPos;     // -1 < vPos.x < +1
 //      vPos.z == 0
 
 out vec4 fragColor; 
-const int NS = 2; // Number of spheres in the scene
+const int NS = 7; // Number of spheres in the scene
 const int NL = 2; // Number of light sources in the scene
 
 uniform Material uMaterials[NS];
@@ -32,7 +32,7 @@ struct Shape {
 
 
 struct Poly {
-    vec4 plane[10];
+    vec4 plane[8];
 };
 
 Poly initCube(float r) {
@@ -71,14 +71,6 @@ float t;
 float fl = 3.;
 
 vec2 sortRoots(float roots[2]) { 
-    // if ((roots[0] > 0.) && (roots[0] <= roots[1])) {
-    //     return vec2(roots[0], roots[1]);
-    // } else if (roots[1] > 0. && roots[1] < roots[0] ) {
-    //     return vec2(roots[1], roots[0]);
-    // } else {
-    //     return vec2(-1., -1.);
-    // }
-
     float tMin = 1000.;
     int minIndex = -1;
 
@@ -138,7 +130,6 @@ vec2 castRaytoPoly(vec3 V, vec3 W, Shape shape) {
         float t = -(dot(P, VV)) / dot(P,WW);
 
         if (dot(P,VV) > 0.) {
-        
             if (t < 0.) {
                 // case 1 - ray missed
                 rayMissed = true;
@@ -154,7 +145,6 @@ vec2 castRaytoPoly(vec3 V, vec3 W, Shape shape) {
         }
 
         if (dot(P,VV) < 0.) {
-        
             if (t > 0.) {
                 // case 3
                 if (t < tMax) {

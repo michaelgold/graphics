@@ -59,7 +59,7 @@ async function setup(state) {
                 state.uProjLoc         = gl.getUniformLocation(program, 'uProj');
                 state.uTimeLoc         = gl.getUniformLocation(program, 'uTime');
 
-                let NS = 2;
+                let NS = 7;
                 
                 state.uMaterialsLoc = [];
                 state.uShapesLoc = [];
@@ -135,8 +135,9 @@ function onStartFrame(t, state) {
 
     gl.uniform1f(state.uTimeLoc, time);
 
+    // big yellow sphere for head
     gl.uniform3fv(state.uMaterialsLoc[0].ambient            , [.1,.1,0.]);
-    gl.uniform3fv(state.uMaterialsLoc[0].diffuse            , [0.,.5,.5]);
+    gl.uniform3fv(state.uMaterialsLoc[0].diffuse            , [.5,.5,0.]);
     gl.uniform3fv(state.uMaterialsLoc[0].specular           , [0.,.1,.1]);
     gl.uniform3fv(state.uMaterialsLoc[0].reflect            , [0.,.1,.1]);
     gl.uniform1f (state.uMaterialsLoc[0].power              , 10.);
@@ -144,12 +145,13 @@ function onStartFrame(t, state) {
     gl.uniform1f (state.uMaterialsLoc[0].indexOfRefaction   , 1.);
 
     gl.uniform1i (state.uShapesLoc[0].type      , 0);
-    gl.uniform3fv(state.uShapesLoc[0].center , [.2,Math.sin(time)/2,-0.1]);
-    gl.uniform1f (state.uShapesLoc[0].size      , .4);
+    gl.uniform3fv(state.uShapesLoc[0].center , [0.,0.,0.]);
+    gl.uniform1f (state.uShapesLoc[0].size      , .6);
     gl.uniform1i (state.uShapesLoc[0].sides      , 0);
 
 
-    gl.uniform3fv(state.uMaterialsLoc[1].ambient , [.1,.1,0.]);
+    // red floating diamond
+    gl.uniform3fv(state.uMaterialsLoc[1].ambient , [.7,0.,0.]);
     gl.uniform3fv(state.uMaterialsLoc[1].diffuse , [.5,.5,0]);
     gl.uniform3fv(state.uMaterialsLoc[1].specular, [1.,1.,1.]);
     gl.uniform3fv(state.uMaterialsLoc[1].reflect , [.1,.1,0.]);
@@ -158,9 +160,84 @@ function onStartFrame(t, state) {
     gl.uniform1f (state.uMaterialsLoc[1].indexOfRefaction   , 1.79);
 
     gl.uniform1i (state.uShapesLoc[1].type      , 1);
-    gl.uniform3fv(state.uShapesLoc[1].center , [Math.sin(time)/2,.4,.5]);
+    gl.uniform3fv(state.uShapesLoc[1].center , [Math.sin(time)/2,.5,.6]);
     gl.uniform1f (state.uShapesLoc[1].size      , .3);
     gl.uniform1i (state.uShapesLoc[1].sides      , 8);
+
+
+    // nose
+    gl.uniform3fv(state.uMaterialsLoc[2].ambient , [0.,0.,0.]);
+    gl.uniform3fv(state.uMaterialsLoc[2].diffuse , [0.1,0.1,0.1]);
+    gl.uniform3fv(state.uMaterialsLoc[2].specular, [1.,1.,1.]);
+    gl.uniform3fv(state.uMaterialsLoc[2].reflect , [0.1,0.1,0.1]);
+    gl.uniform1f (state.uMaterialsLoc[2].power   , 20.);
+    gl.uniform3fv(state.uMaterialsLoc[2].transparent        , [.1,.1,.1]);
+    gl.uniform1f (state.uMaterialsLoc[2].indexOfRefaction   , 1.79);
+
+    gl.uniform1i (state.uShapesLoc[2].type      , 1);
+    gl.uniform3fv(state.uShapesLoc[2].center , [0., 0., .7]);
+    gl.uniform1f (state.uShapesLoc[2].size      , .2);
+    gl.uniform1i (state.uShapesLoc[2].sides      , 8);
+
+
+    // left part of mouth
+    gl.uniform3fv(state.uMaterialsLoc[3].ambient , [0.,0.,0.]);
+    gl.uniform3fv(state.uMaterialsLoc[3].diffuse , [0.1,0.1,0.1]);
+    gl.uniform3fv(state.uMaterialsLoc[3].specular, [1.,1.,1.]);
+    gl.uniform3fv(state.uMaterialsLoc[3].reflect , [0.1,0.1,0.1]);
+    gl.uniform1f (state.uMaterialsLoc[3].power   , 20.);
+    gl.uniform3fv(state.uMaterialsLoc[3].transparent        , [.1,.1,.1]);
+    gl.uniform1f (state.uMaterialsLoc[3].indexOfRefaction   , 1.79);
+
+    gl.uniform1i (state.uShapesLoc[3].type      , 1);
+    gl.uniform3fv(state.uShapesLoc[3].center , [-.08, -.3, .5]);
+    gl.uniform1f (state.uShapesLoc[3].size      , .159);
+    gl.uniform1i (state.uShapesLoc[3].sides      , 6);
+
+
+    // right part of mouth
+    gl.uniform3fv(state.uMaterialsLoc[4].ambient , [0.,0.,0.]);
+    gl.uniform3fv(state.uMaterialsLoc[4].diffuse , [0.1,0.1,0.1]);
+    gl.uniform3fv(state.uMaterialsLoc[4].specular, [1.,1.,1.]);
+    gl.uniform3fv(state.uMaterialsLoc[4].reflect , [0.1,0.1,0.1]);
+    gl.uniform1f (state.uMaterialsLoc[4].power   , 20.);
+    gl.uniform3fv(state.uMaterialsLoc[4].transparent        , [.1,.1,.1]);
+    gl.uniform1f (state.uMaterialsLoc[4].indexOfRefaction   , 1.79);
+
+    gl.uniform1i (state.uShapesLoc[4].type      , 1);
+    gl.uniform3fv(state.uShapesLoc[4].center , [.08, -.3, .5]);
+    gl.uniform1f (state.uShapesLoc[4].size      , .159);
+    gl.uniform1i (state.uShapesLoc[4].sides      , 6);
+
+
+    // left eye
+    gl.uniform3fv(state.uMaterialsLoc[5].ambient , [0.,0.,0.]);
+    gl.uniform3fv(state.uMaterialsLoc[5].diffuse , [0.1,0.1,0.1]);
+    gl.uniform3fv(state.uMaterialsLoc[5].specular, [1.,1.,1.]);
+    gl.uniform3fv(state.uMaterialsLoc[5].reflect , [0.1,0.1,0.1]);
+    gl.uniform1f (state.uMaterialsLoc[5].power   , 20.);
+    gl.uniform3fv(state.uMaterialsLoc[5].transparent        , [.1,.1,.1]);
+    gl.uniform1f (state.uMaterialsLoc[5].indexOfRefaction   , 1.79);
+
+    gl.uniform1i (state.uShapesLoc[5].type      , 0);
+    gl.uniform3fv(state.uShapesLoc[5].center , [-.2 + Math.sin(time)/64 , .2, .5 ]);
+    gl.uniform1f (state.uShapesLoc[5].size      , .1);
+    gl.uniform1i (state.uShapesLoc[5].sides      , 0);
+
+    // right eye
+    gl.uniform3fv(state.uMaterialsLoc[6].ambient , [0.,0.,0.]);
+    gl.uniform3fv(state.uMaterialsLoc[6].diffuse , [0.1,0.1,0.1]);
+    gl.uniform3fv(state.uMaterialsLoc[6].specular, [1.,1.,1.]);
+    gl.uniform3fv(state.uMaterialsLoc[6].reflect , [0.1,0.1,0.1]);
+    gl.uniform1f (state.uMaterialsLoc[6].power   , 20.);
+    gl.uniform3fv(state.uMaterialsLoc[6].transparent        , [.1,.1,.1]);
+    gl.uniform1f (state.uMaterialsLoc[6].indexOfRefaction   , 1.79);
+
+    gl.uniform1i (state.uShapesLoc[6].type      , 0);
+    gl.uniform3fv(state.uShapesLoc[6].center , [.2 + Math.sin(time)/64 , .2, .5]);
+    gl.uniform1f (state.uShapesLoc[6].size      , .1);
+    gl.uniform1i (state.uShapesLoc[6].sides      , 0);
+
 
     gl.enable(gl.DEPTH_TEST);
 }
