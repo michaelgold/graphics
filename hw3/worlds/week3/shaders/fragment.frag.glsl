@@ -86,6 +86,27 @@ bool isInShadow(vec3 P, vec3 L) {
     return false;
 }
 
+vec3 phongShading(vec3 P, vec3 N, Shape S, Material M) {
+    vec3 ambientComponent =  M.ambient;
+
+    vec3 E = -W;
+    vec3 specularComponent = vec3(0.,0.,0.);
+    vec3 diffuseComponent = vec3(0.,0.,0.);
+
+
+    for (int j = 0; j < Ldir.length(); j++) {
+        vec3 R = 2. * dot(N,Ldir[j]) * N - Ldir[j];
+        if (!isInShadow(P, Ldir[j])) {
+            specularComponent += Lcol[j] * (M.specular * pow(max(0., dot(E,R) ), M.power));
+            diffuseComponent +=  Lcol[j] * (M.diffuse * max(0., dot(N,Lcol[j])));
+        }
+    }
+    
+    return ambientComponent + diffuseComponent + specularComponent;
+    
+}
+
+
 void main() {
     Ldir[0] = normalize(vec3(1.,1.,.5));
     Lcol[0] = vec3(1.,1.,1.);
@@ -113,26 +134,8 @@ void main() {
             N = normalize(P - uShapes[i].center);      
             tMin = t;
             
-            ambientComponent =  uMaterials[i].ambient;
+            color = phongShading(P, N, uShapes[i], uMaterials[i]);
 
-            vec3 E = -W;
-            vec3 specularComponent = vec3(0.,0.,0.);
-            vec3 diffuseComponent = vec3(0.,0.,0.);
-        
-
-            for (int j = 0; j < Ldir.length(); j++) {
-                vec3 R = 2. * dot(N,Ldir[j]) * N - Ldir[j];
-                if (!isInShadow(P, Ldir[j])){
-                    specularComponent += Lcol[j] * (uMaterials[i].specular * pow(max(0., dot(E,R) ), uMaterials[i].power));
-                    diffuseComponent +=  Lcol[j] * (uMaterials[i].diffuse * max(0., dot(N,Lcol[j])));
-                }
-
-
-                
-            
-            color = ambientComponent + diffuseComponent + specularComponent;
-
-            }
         }
         
         
