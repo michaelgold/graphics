@@ -29,11 +29,27 @@ struct Shape {
     float size;
 };
 
+
+struct Cube {
+    vec4 plane[6];
+};
+
+Cube initCube(float r) {
+    Cube c;
+    c.plane[0] = vec4(-1.,  0.,  0., -r);
+    c.plane[1] = vec4( 1.,  0.,  0., -r);
+    c.plane[2] = vec4( 0., -1.,  0., -r);
+    c.plane[3] = vec4( 0.,  1.,  0., -r);
+    c.plane[4] = vec4( 0.,  0., -1., -r);
+    c.plane[5] = vec4( 0.,  0.,  1., -r);
+    return c;
+}
+
 uniform Shape uShapes[NS];
 
 // Declarations of arrays for spheres, lights and phong shading:
 
-vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], V, W, VV, P, N, color;
+vec3 Ldir[NL], Lcol[NL], Ambient[NS], Diffuse[NS], V, W, VV, P, N, color, frontSurfaceNormal, rearSurfaceNormal;
 vec4 Sphere[NS], Specular[NS];
 float t;
 float fl = 3.;
@@ -65,19 +81,88 @@ vec2 sortRoots(float roots[2]) {
         case -1:
             return vec2(-1., -1.);
     }
-    
 }
         
-
-vec2 rayShape(vec3 V, vec3 W, Shape shape) {
+vec2 castRaytoSphere(vec3 V, vec3 W, Shape shape) {
+    float roots[2];
     VV = V - shape.center;
     
     float rootPart = sqrt( (dot(W,VV) * dot(W,VV))  - dot(VV,VV) + (shape.size * shape.size));
-    float roots[2];
+    
     roots[0] = -(dot(W,VV)) - rootPart;
     roots[1] = -(dot(W,VV)) + rootPart;
 
     return sortRoots(roots);
+}
+
+vec2 castRaytoCube(vec3 V, vec3 W, Shape shape) {
+    vec4 VV = vec4(V - shape.center, 1.);
+    vec4 WW = vec4(W, 0.);
+
+    float tMin = -1000.;
+    float tMax = 1000.;
+    
+    Cube c = initCube(shape.size / 2.);
+
+    bool rayMissed = false;
+
+    for (int i = 0; i < c.plane.length(); i++ ) {
+
+        vec4 P = c.plane[i];
+
+        float t = -(dot(P, VV)) / dot(P,WW);
+
+        if (dot(P,VV) > 0.) {
+        
+            if (t < 0.) {
+                // case 1 - ray missed
+                rayMissed = true;
+            }
+
+            if (t > 0.) {
+                // case 2
+                if (t > tMin) {
+                    frontSurfaceNormal = c.plane[i].xyz;
+                    tMin = t;
+                }
+            }
+        }
+
+        if (dot(P,VV) < 0.) {
+        
+            if (t > 0.) {
+                // case 3
+                if (t < tMax) {
+                    rearSurfaceNormal = c.plane[i].xyz;
+                    tMax = t;
+                }
+            }
+            
+            if (t < 0.) {
+                // case 4 - do nothing
+            }
+        }
+    }
+
+    if (!rayMissed && tMin <= tMax) {
+        return vec2(tMin, tMax);
+    }
+    
+    return vec2(-1., -1.);
+    
+
+ 
+}
+
+
+vec2 rayShape(vec3 V, vec3 W, Shape shape) {
+    vec2 roots;
+    switch (shape.type) {
+        case 0:
+            return castRaytoSphere(V, W, shape);
+        case 1:
+            return castRaytoCube(V, W, shape);
+    }
 }
 
 bool isInShadow(vec3 P, vec3 L) {
@@ -90,7 +175,13 @@ bool isInShadow(vec3 P, vec3 L) {
 }
 
 vec3 computeSurfaceNormal(vec3 P, Shape S) {
-    return normalize(P - S.center);
+
+    switch (S.type) {
+        case 0:
+            return normalize(P - S.center);
+        case 1:
+            return frontSurfaceNormal;
+    }    
 }
 
 vec3 phongShading(vec3 P, vec3 N, Shape S, Material M) {
@@ -99,7 +190,6 @@ vec3 phongShading(vec3 P, vec3 N, Shape S, Material M) {
     vec3 E = -W;
     vec3 specularComponent = vec3(0.,0.,0.);
     vec3 diffuseComponent = vec3(0.,0.,0.);
-
 
     for (int j = 0; j < Ldir.length(); j++) {
         vec3 R = 2. * dot(N,Ldir[j]) * N - Ldir[j];
@@ -198,8 +288,6 @@ void main() {
     float tMin = 1000.;
 
     for (int i = 0; i < uShapes.length(); i++) {
-        
-
         V = vec3(0,0,fl);
         W = normalize(vec3(vPos.x, vPos.y, -fl));
         t = rayShape(V, W, uShapes[i]).x;
@@ -214,13 +302,7 @@ void main() {
             
             color = phongShading(P, N, uShapes[i], uMaterials[i]);
             color += addReflection(uMaterials[i]);
-            color += addRefraction(uMaterials[i], uShapes[i]);
-
-
-
-
-
-            
+            color += addRefraction(uMaterials[i], uShapes[i]);    
         }
         
         fragColor = vec4((color), 1.);

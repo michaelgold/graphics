@@ -142,9 +142,9 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[0].transparent        , [0.,0.,0.]);
     gl.uniform1f (state.uMaterialsLoc[0].indexOfRefaction   , 1.);
 
-    gl.uniform1f (state.uShapesLoc[0].type      , 0);
+    gl.uniform1i (state.uShapesLoc[0].type      , 0);
     gl.uniform3fv(state.uShapesLoc[0].center , [.2,Math.sin(time)/2,-0.1]);
-    gl.uniform1f (state.uShapesLoc[0].size      , .3);
+    gl.uniform1f (state.uShapesLoc[0].size      , .4);
 
 
     gl.uniform3fv(state.uMaterialsLoc[1].ambient , [.1,.1,0.]);
@@ -153,9 +153,9 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[1].reflect , [.1,.1,0.]);
     gl.uniform1f (state.uMaterialsLoc[1].power   , 20.);
     gl.uniform3fv(state.uMaterialsLoc[1].transparent        , [.1,.1,0.]);
-    gl.uniform1f (state.uMaterialsLoc[1].indexOfRefaction   , .89);
+    gl.uniform1f (state.uMaterialsLoc[1].indexOfRefaction   , 1.79);
 
-    gl.uniform1f (state.uShapesLoc[1].type      , 0);
+    gl.uniform1i (state.uShapesLoc[1].type      , 1);
     gl.uniform3fv(state.uShapesLoc[1].center , [Math.sin(time)/2,.4,.5]);
     gl.uniform1f (state.uShapesLoc[1].size      , .3);
 
