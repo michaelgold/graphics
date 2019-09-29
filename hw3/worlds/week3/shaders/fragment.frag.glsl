@@ -8,6 +8,7 @@ struct Material {
     vec3 diffuse;
     vec3 specular;
     float power;
+    vec3 reflect;
 };
 
 in vec3 vPos;     // -1 < vPos.x < +1
@@ -86,6 +87,10 @@ bool isInShadow(vec3 P, vec3 L) {
     return false;
 }
 
+vec3 computeSurfaceNormal(vec3 P, Shape S) {
+    return normalize(P - S.center);
+}
+
 vec3 phongShading(vec3 P, vec3 N, Shape S, Material M) {
     vec3 ambientComponent =  M.ambient;
 
@@ -126,24 +131,36 @@ void main() {
 
         vec3 ambientComponent = vec3(0.,0.,0.);
 
-
-
-
         if (t > 0. && t < tMin) {
-            P = V + t * W;
-            N = normalize(P - uShapes[i].center);      
+            P = V + t * W;   
+            N = computeSurfaceNormal(P, uShapes[i]);
             tMin = t;
             
             color = phongShading(P, N, uShapes[i], uMaterials[i]);
 
+            if (length(uMaterials[i].reflect) > 0.) {
+                vec3 WW = W - 2. * dot(N, W) * N;
+                float ttMin = 1000.;
+                Shape S;
+                Material M;
+                vec3 PP, NN;
+                for (int j = 0; j < NS; j++) {
+                    float tt = rayShape(P, WW, uShapes[j]).x;
+                    if (tt > 0. && tt < ttMin) {
+                        S = uShapes[j];
+                        M = uMaterials[j];
+                        PP = P + t * WW;
+                        NN = computeSurfaceNormal(PP, S);
+
+                    }
+                }
+
+            }
+            
+
         }
         
         
-
-
-        
-
-
         fragColor = vec4((color), 1.0);
 
     }
