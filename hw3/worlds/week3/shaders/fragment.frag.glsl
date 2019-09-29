@@ -148,6 +148,45 @@ vec3 refractRay(vec3 W, vec3 N, float indexOfRefraction) {
     return WW;
 }
 
+vec3 addRefraction(Material material, Shape shape) {
+    if (length(material.transparent) > 0.) {
+    // compute ray that refracts to shape
+
+        vec3 WW = refractRay(W, N, material.indexOfRefraction);
+
+        float tt = rayShape(P - WW / 1000., WW, shape).y; // second root
+
+        // compute second refacted ray that goes out of shape
+
+        vec3 PP = P + tt * WW;
+        vec3 NN = computeSurfaceNormal(PP, shape);
+        vec3 WWW = refractRay(WW, NN, 1. / material.indexOfRefraction);
+
+        // if emergent ray hits a shape, do Phong shading on nearest one to add color
+
+        Shape S;
+        Material M;
+        float tttMin = 1000.;
+        vec3 PPP, NNN;
+        for (int j = 0; j < NS; j++) {
+            float ttt = rayShape(PP, WWW, uShapes[j]).x;
+            if (ttt > .001 && ttt < tttMin) {
+                S = uShapes[j];
+                M = uMaterials[j];
+                PPP = PP + tt * WWW;
+                NNN = computeSurfaceNormal(PPP, S);
+                tttMin = ttt;
+            }
+        }
+        if (tttMin < 1000.) {
+            vec3 rgb = phongShading(PPP, NNN, S, M);
+            return rgb * material.transparent;
+        }
+    }
+
+    return vec3(0.,0.,0.);
+}
+
 
 void main() {
     Ldir[0] = normalize(vec3(1.,1.,.5));
@@ -175,42 +214,9 @@ void main() {
             
             color = phongShading(P, N, uShapes[i], uMaterials[i]);
             color += addReflection(uMaterials[i]);
+            color += addRefraction(uMaterials[i], uShapes[i]);
 
 
-            if (length(uMaterials[i].transparent) > 0.) {
-                // compute ray that refracts to shape
-
-                vec3 WW = refractRay(W, N, uMaterials[i].indexOfRefraction);
-
-                float tt = rayShape(P - WW / 1000., WW, uShapes[i]).y; // second root
-
-                // compute second refacted ray that goes out of shape
-
-                vec3 PP = P + tt * WW;
-                vec3 NN = computeSurfaceNormal(PP, uShapes[i]);
-                vec3 WWW = refractRay(WW, NN, 1. / uMaterials[i].indexOfRefraction);
-
-                // if emergent ray hits a shape, do Phong shading on nearest one to add color
-
-                Shape S;
-                Material M;
-                float tttMin = 1000.;
-                vec3 PPP, NNN;
-                for (int j = 0; j < NS; j++) {
-                    float ttt = rayShape(PP, WWW, uShapes[j]).x;
-                    if (ttt > .001 && ttt < tttMin) {
-                        S = uShapes[j];
-                        M = uMaterials[j];
-                        PPP = PP + tt * WWW;
-                        NNN = computeSurfaceNormal(PPP, S);
-                        tttMin = ttt;
-                    }
-                }
-                if (tttMin < 1000.) {
-                    vec3 rgb = phongShading(PPP, NNN, S, M);
-                    color += rgb * uMaterials[i].transparent;
-                }
-            }
 
 
 
