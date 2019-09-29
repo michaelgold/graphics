@@ -60,7 +60,7 @@ vec2 sortRoots(float roots[2]) {
             return vec2(roots[0], roots[1]);
         case 1:
             return vec2(roots[1], roots[0]);
-        case -2:
+        case -1:
             return vec2(-1., -1.);
     }
     
@@ -108,7 +108,31 @@ vec3 phongShading(vec3 P, vec3 N, Shape S, Material M) {
     }
     
     return ambientComponent + diffuseComponent + specularComponent;
-    
+}
+
+vec3 addReflection(Material material) {
+    if (length(material.reflect) > 0.) {
+        vec3 WW = W - 2. * dot(N, W) * N;
+        float ttMin = 1000.;
+        Shape S;
+        Material M;
+        vec3 PP, NN;
+        for (int j = 0; j < NS; j++) {
+            float tt = rayShape(P, WW, uShapes[j]).x;
+            if (tt > 0. && tt < ttMin) {
+                S = uShapes[j];
+                M = uMaterials[j];
+                PP = P + t * WW;
+                NN = computeSurfaceNormal(PP, S);
+                ttMin = tt;
+            }
+        }
+        if (ttMin < 1000.) {
+            vec3 rgb = phongShading(PP, NN, S, M);
+            return rgb * material.reflect;
+        }
+    }
+    return vec3(0.,0.,0.);
 }
 
 
@@ -137,33 +161,8 @@ void main() {
             tMin = t;
             
             color = phongShading(P, N, uShapes[i], uMaterials[i]);
-
-            if (length(uMaterials[i].reflect) > 0.) {
-                vec3 WW = W - 2. * dot(N, W) * N;
-                float ttMin = 1000.;
-                Shape S;
-                Material M;
-                vec3 PP, NN;
-                for (int j = 0; j < NS; j++) {
-                    float tt = rayShape(P, WW, uShapes[j]).x;
-                    if (tt > 0. && tt < ttMin) {
-                        S = uShapes[j];
-                        M = uMaterials[j];
-                        PP = P + t * WW;
-                        NN = computeSurfaceNormal(PP, S);
-                        ttMin = tt;
-                    }
-                }
-                if (ttMin < 1000.) {
-                    vec3 rgb = phongShading(PP, NN, S, M);
-                    color += rgb * uMaterials[i].reflect;
-                }
-
-            }
-            
-
+            color += addReflection(uMaterials[i]);
         }
-        
         
         fragColor = vec4((color), 1.0);
 
