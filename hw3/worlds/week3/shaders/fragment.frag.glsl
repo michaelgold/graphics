@@ -318,7 +318,7 @@ void main() {
             color += addRefraction(uMaterials[i], uShapes[i]);    
         }
         
-        fragColor = vec4((color), 1.);
+        fragColor = vec4(sqrt(color), 1.);
 
     }
 }
