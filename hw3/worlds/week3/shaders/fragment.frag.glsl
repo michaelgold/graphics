@@ -251,6 +251,15 @@ vec3 refractRay(vec3 W, vec3 N, float indexOfRefraction) {
     return WW;
 }
 
+vec3 backgroundAnimation() {
+    vec3 color = vec3(0.5, 0.5, 0.5);
+    float t = vPos.x / vPos.y + uTime; // VARY SPACE AND TIME
+    float s = sin(10. * t);   // MAKE A SINE WAVE
+    float c = 0.5 + 0.5 * s;  // FIT BETWEEN 0 AND 1
+    color.r = c;              // USE IT TO VARY RED
+    return color;
+}
+
 vec3 addRefraction(Material material, Shape shape) {
     if (length(material.transparent) > 0.) {
     // compute ray that refracts to shape
@@ -292,6 +301,8 @@ vec3 addRefraction(Material material, Shape shape) {
 
 
 void main() {
+    //color = backgroundAnimation();
+
     Ldir[0] = normalize(vec3(1.,1.,.5));
     Lcol[0] = vec3(1.,1.,1.);
 
