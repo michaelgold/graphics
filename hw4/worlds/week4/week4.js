@@ -185,6 +185,28 @@ let perspective = (x, y, z, w) => {
     return [ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, w ];
 }
 
+let getRow = (matrix, row) => {
+    return [ matrix[row], matrix[row + 4], matrix[row + 8], matrix[row + 12] ]
+}
+
+let getColumn = (matrix, column) => {
+    column = column * 4;
+    return [ matrix[column], matrix[column + 1], matrix[column + 2], matrix[column + 3] ];
+}
+
+let dotProduct = (row, column) => {
+    return (row[0] * column[0] + row[1] * column[1] + row[2] * column[2] + row[3] * column[3]);
+}
+
+let matrixMultiply = (matrix, other) => {
+    let result = [];
+    for (let column = 0; column < 4; column++) {
+        for (let row = 0; row < 4; row++ ) {
+            result.push(dotProduct(getRow(matrix, row), getColumn(other, column)));
+        }
+    }
+    return result;
+}
 
 // NOTE: t is the elapsed time since system start in ms, but
 // each world could have different rules about time elapsed and whether the time
