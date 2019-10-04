@@ -89,6 +89,8 @@ async function setup(state) {
                     state.uShapesLoc[i].center =  gl.getUniformLocation(program, 'uShapes['+i+'].center');
                     state.uShapesLoc[i].size =  gl.getUniformLocation(program, 'uShapes['+i+'].size');
                     state.uShapesLoc[i].sides =  gl.getUniformLocation(program, 'uShapes['+i+'].sides');
+                    state.uShapesLoc[i].matrix = gl.getUniformLocation(program, 'uShapes['+i+'].matrix');
+                    state.uShapesLoc[i].imatrix = gl.getUniformLocation(program, 'uShapes['+i+'].imatrix');
                 }
 
 
@@ -265,7 +267,10 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[1].center , [Math.sin(time)/2,.5,.6]);
     gl.uniform1f (state.uShapesLoc[1].size      , .3);
     gl.uniform1i (state.uShapesLoc[1].sides      , 8);
-
+    let rotationMatrix = rotateY(30);
+    gl.uniformMatrix4fv(state.uShapesLoc[1].matrix , false, rotationMatrix);
+    gl.uniformMatrix4fv(state.uShapesLoc[1].imatrix , false, inverse(rotationMatrix));
+    
 
     // nose
     gl.uniform3fv(state.uMaterialsLoc[2].ambient , [0.,0.,0.]);
@@ -280,6 +285,9 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[2].center , [0., 0., .7]);
     gl.uniform1f (state.uShapesLoc[2].size      , .2);
     gl.uniform1i (state.uShapesLoc[2].sides      , 8);
+    gl.uniformMatrix4fv(state.uShapesLoc[2].matrix , false, identity());
+    gl.uniformMatrix4fv(state.uShapesLoc[2].imatrix , false, identity());
+    
 
 
     // left part of mouth
@@ -295,6 +303,8 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[3].center , [-.08, -.3, .5]);
     gl.uniform1f (state.uShapesLoc[3].size      , .159);
     gl.uniform1i (state.uShapesLoc[3].sides      , 6);
+    gl.uniformMatrix4fv(state.uShapesLoc[3].matrix , false, identity());
+    gl.uniformMatrix4fv(state.uShapesLoc[3].imatrix , false, identity());
 
 
     // right part of mouth
@@ -310,7 +320,8 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[4].center , [.08, -.3, .5]);
     gl.uniform1f (state.uShapesLoc[4].size      , .159);
     gl.uniform1i (state.uShapesLoc[4].sides      , 6);
-
+    gl.uniformMatrix4fv(state.uShapesLoc[4].matrix , false, identity());
+    gl.uniformMatrix4fv(state.uShapesLoc[4].imatrix , false, identity());
 
     // left eye
     gl.uniform3fv(state.uMaterialsLoc[5].ambient , [0.,0.,0.]);

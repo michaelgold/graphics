@@ -23,17 +23,23 @@ const int NL = 2; // Number of light sources in the scene
 
 uniform Material uMaterials[NS];
 
-struct Shape {
-    int type; //0 sphere, 1 poly
-    vec3 center;
-    float size;
-    int sides;
-};
 
 
 struct Poly {
     vec4 plane[8];
 };
+
+struct Shape {
+    int type; //0 sphere, 1 poly
+    vec3 center;
+    float size;
+    int sides;
+    mat4 matrix;
+    mat4 imatrix; // this is just the inverse of the above
+    Poly poly;
+    bool initialized;
+};
+
 
 Poly initCube(float r) {
     Poly c;
@@ -112,20 +118,27 @@ Poly initPoly (Shape shape) {
     }
 }
 
-vec2 castRaytoPoly(vec3 V, vec3 W, Shape shape) {
+vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
     vec4 VV = vec4(V - shape.center, 1.);
     vec4 WW = vec4(W, 0.);
 
     float tMin = -1000.;
     float tMax = 1000.;
 
-    Poly poly = initPoly(shape);
+    if (shape.initialized != true ) {
+        shape.poly = initPoly(shape);
+        shape.initialized = true;
+    }
 
+    
     bool rayMissed = false;
 
     for (int i = 0; i < shape.sides; i++ ) {
+        shape.poly.plane[i] *= shape.imatrix;
 
-        vec4 P = poly.plane[i];
+        vec4 P = shape.poly.plane[i];
+
+        
 
         float t = -(dot(P, VV)) / dot(P,WW);
 
@@ -138,7 +151,7 @@ vec2 castRaytoPoly(vec3 V, vec3 W, Shape shape) {
             if (t > 0.) {
                 // case 2
                 if (t > tMin) {
-                    frontSurfaceNormal = poly.plane[i].xyz;
+                    frontSurfaceNormal = shape.poly.plane[i].xyz;
                     tMin = t;
                 }
             }
@@ -148,7 +161,7 @@ vec2 castRaytoPoly(vec3 V, vec3 W, Shape shape) {
             if (t > 0.) {
                 // case 3
                 if (t < tMax) {
-                    rearSurfaceNormal = poly.plane[i].xyz;
+                    rearSurfaceNormal = shape.poly.plane[i].xyz;
                     tMax = t;
                 }
             }
