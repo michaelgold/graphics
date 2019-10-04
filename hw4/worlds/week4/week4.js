@@ -151,6 +151,41 @@ let inverse = src => {
   return dst;
 }
 
+let identity = () => {
+    return [ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 ];
+}
+
+let translate = (x, y, z) => {
+    return [ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 ];
+}
+
+let rotateX = (theta) => {
+    let c = Math.cos(theta);
+    let s = Math.sin(theta); 
+    return [ 1, 0, 0, 0,  0, c, s, 0,  0, -s, c, 0,  0, 0, 0, 1 ];
+}
+
+let rotateY = (theta) => {
+    let c = Math.cos(theta);
+    let s = Math.sin(theta); 
+    return [ c, 0, -s, 0,  0, 1, 0, 0,  s, 0, c, 0,  0, 0, 0, 1 ];
+}
+
+let rotateZ = (theta) => {
+    let c = Math.cos(theta);
+    let s = Math.sin(theta); 
+    return [ c, s, 0, 0,  -s, c, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 ];
+}
+
+let scale = (x, y, z) => {
+    return [ x, 0, 0, 0,  0, y, 0, 0,  0, 0, z, 0,  0, 0, 0, 1 ];
+}
+
+let perspective = (x, y, z, w) => {
+    return [ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, w ];
+}
+
+
 // NOTE: t is the elapsed time since system start in ms, but
 // each world could have different rules about time elapsed and whether the time
 // is reset after returning to the world
