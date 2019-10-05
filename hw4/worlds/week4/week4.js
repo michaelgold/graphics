@@ -213,6 +213,27 @@ let matrixMultiply = (matrix, other) => {
 // NOTE: t is the elapsed time since system start in ms, but
 // each world could have different rules about time elapsed and whether the time
 // is reset after returning to the world
+
+let theta = {
+    value: 0,
+    frames: 0,
+    delay: 2,
+    increase: function(amt) {
+        this.frames++;
+        if (this.frames % this.delay == 0) {
+            if (this.value < 360) {
+                this.value += amt;
+            } else {
+                this.value = 0;
+            }   
+        }
+    }
+}
+
+let x = theta;
+let y = theta;
+let z = theta;
+
 function onStartFrame(t, state) {
 
     let tStart = t;
@@ -267,9 +288,13 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[1].center , [Math.sin(time)/2,.5,.6]);
     gl.uniform1f (state.uShapesLoc[1].size      , .3);
     gl.uniform1i (state.uShapesLoc[1].sides      , 8);
-    let rotationMatrix = rotateY(30);
-    gl.uniformMatrix4fv(state.uShapesLoc[1].matrix , false, rotationMatrix);
-    gl.uniformMatrix4fv(state.uShapesLoc[1].imatrix , false, inverse(rotationMatrix));
+
+    let redDiamondMatrix = matrixMultiply( rotateY(y.value) , rotateX(x.value) );
+    x.increase(.1);
+    y.increase(.01);
+
+    gl.uniformMatrix4fv(state.uShapesLoc[1].matrix , false, redDiamondMatrix);
+    gl.uniformMatrix4fv(state.uShapesLoc[1].imatrix , false, inverse(redDiamondMatrix));
     
 
     // nose
