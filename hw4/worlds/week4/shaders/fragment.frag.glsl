@@ -20,6 +20,9 @@ in vec3 vPos;     // -1 < vPos.x < +1
 out vec4 fragColor; 
 const int NS = 7; // Number of spheres in the scene
 const int NL = 2; // Number of light sources in the scene
+const int SPHERE = 0;
+const int POLY = 1;
+const int CYLANDER = 2;
 
 uniform Material uMaterials[NS];
 
@@ -98,6 +101,7 @@ vec2 sortRoots(float roots[2]) {
             return vec2(-1., -1.);
     }
 }
+
         
 vec2 castRaytoSphere(vec3 V, vec3 W, Shape shape) {
     float roots[2];
@@ -190,9 +194,9 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
 vec2 rayShape(vec3 V, vec3 W, Shape shape) {
     vec2 roots;
     switch (shape.type) {
-        case 0:
+        case SPHERE:
             return castRaytoSphere(V, W, shape);
-        case 1:
+        case POLY:
             return castRaytoPoly(V, W, shape);
     }
 }
@@ -209,9 +213,9 @@ bool isInShadow(vec3 P, vec3 L) {
 vec3 computeSurfaceNormal(vec3 P, Shape S) {
 
     switch (S.type) {
-        case 0:
+        case SPHERE:
             return normalize(P - S.center);
-        case 1:
+        case POLY:
             return frontSurfaceNormal;
     }    
 }
