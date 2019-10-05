@@ -285,12 +285,15 @@ function onStartFrame(t, state) {
     gl.uniform1f (state.uMaterialsLoc[1].indexOfRefaction   , 1.79);
 
     gl.uniform1i (state.uShapesLoc[1].type      , 1);
-    gl.uniform3fv(state.uShapesLoc[1].center , [Math.sin(time)/2,.5,.6]);
+    gl.uniform3fv(state.uShapesLoc[1].center , [0.,0,0]);
     gl.uniform1f (state.uShapesLoc[1].size      , .3);
     gl.uniform1i (state.uShapesLoc[1].sides      , 8);
 
     let redDiamondMatrix = matrixMultiply( rotateY(y.value) , rotateX(x.value) );
-    x.increase(.1);
+    // let redDiamondMatrix = rotateY(x.value) ;
+    
+    redDiamondMatrix = matrixMultiply (redDiamondMatrix, translate(0 , 0, 1  ));
+    x.increase(.01);
     y.increase(.01);
 
     gl.uniformMatrix4fv(state.uShapesLoc[1].matrix , false, redDiamondMatrix);
