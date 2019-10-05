@@ -91,6 +91,7 @@ async function setup(state) {
                     state.uShapesLoc[i].sides =  gl.getUniformLocation(program, 'uShapes['+i+'].sides');
                     state.uShapesLoc[i].matrix = gl.getUniformLocation(program, 'uShapes['+i+'].matrix');
                     state.uShapesLoc[i].imatrix = gl.getUniformLocation(program, 'uShapes['+i+'].imatrix');
+                    state.uShapesLoc[i].followCursor = gl.getUniformLocation(program, 'uShapes['+i+'].followCursor');
                 }
 
 
@@ -273,6 +274,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[0].center , [0.,0.,0.]);
     gl.uniform1f (state.uShapesLoc[0].size      , .6);
     gl.uniform1i (state.uShapesLoc[0].sides      , 0);
+    gl.uniform1f (state.uShapesLoc[0].followCursor      , 0);
 
 
     // red floating diamond
@@ -285,14 +287,15 @@ function onStartFrame(t, state) {
     gl.uniform1f (state.uMaterialsLoc[1].indexOfRefaction   , 1.79);
 
     gl.uniform1i (state.uShapesLoc[1].type      , 1);
-    gl.uniform3fv(state.uShapesLoc[1].center , [0.,0,0]);
+    gl.uniform3fv(state.uShapesLoc[1].center , [0.,0, .85]);
     gl.uniform1f (state.uShapesLoc[1].size      , .3);
     gl.uniform1i (state.uShapesLoc[1].sides      , 8);
+    gl.uniform1f (state.uShapesLoc[1].followCursor      , 1);
 
     let redDiamondMatrix = matrixMultiply( rotateY(y.value) , rotateX(x.value) );
     // let redDiamondMatrix = rotateY(x.value) ;
     
-    redDiamondMatrix = matrixMultiply (redDiamondMatrix, translate(0 , 0, 1  ));
+    redDiamondMatrix = matrixMultiply (redDiamondMatrix, translate(0 , 0, .01  ));
     x.increase(.01);
     y.increase(.01);
 
@@ -315,6 +318,7 @@ function onStartFrame(t, state) {
     gl.uniform1i (state.uShapesLoc[2].sides      , 8);
     gl.uniformMatrix4fv(state.uShapesLoc[2].matrix , false, identity());
     gl.uniformMatrix4fv(state.uShapesLoc[2].imatrix , false, identity());
+    gl.uniform1f (state.uShapesLoc[2].followCursor      , 0);
     
 
 
@@ -333,7 +337,7 @@ function onStartFrame(t, state) {
     gl.uniform1i (state.uShapesLoc[3].sides      , 6);
     gl.uniformMatrix4fv(state.uShapesLoc[3].matrix , false, identity());
     gl.uniformMatrix4fv(state.uShapesLoc[3].imatrix , false, identity());
-
+    gl.uniform1f (state.uShapesLoc[3].followCursor      , 0);
 
     // right part of mouth
     gl.uniform3fv(state.uMaterialsLoc[4].ambient , [0.,0.,0.]);
@@ -350,6 +354,7 @@ function onStartFrame(t, state) {
     gl.uniform1i (state.uShapesLoc[4].sides      , 6);
     gl.uniformMatrix4fv(state.uShapesLoc[4].matrix , false, identity());
     gl.uniformMatrix4fv(state.uShapesLoc[4].imatrix , false, identity());
+    gl.uniform1f (state.uShapesLoc[4].followCursor      , 0);
 
     // left eye
     gl.uniform3fv(state.uMaterialsLoc[5].ambient , [0.,0.,0.]);
@@ -364,6 +369,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[5].center , [-.2 + Math.sin(time)/64 , .2, .5 ]);
     gl.uniform1f (state.uShapesLoc[5].size      , .1);
     gl.uniform1i (state.uShapesLoc[5].sides      , 0);
+    gl.uniform1f (state.uShapesLoc[5].followCursor      , 0);
 
     // right eye
     gl.uniform3fv(state.uMaterialsLoc[6].ambient , [0.,0.,0.]);
@@ -378,7 +384,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[6].center , [.2 + Math.sin(time)/64 , .2, .5]);
     gl.uniform1f (state.uShapesLoc[6].size      , .1);
     gl.uniform1i (state.uShapesLoc[6].sides      , 0);
-
+    gl.uniform1f (state.uShapesLoc[6].followCursor      , 0);
 
     gl.enable(gl.DEPTH_TEST);
 }

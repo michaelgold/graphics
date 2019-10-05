@@ -38,6 +38,7 @@ struct Shape {
     mat4 imatrix; // this is just the inverse of the above
     Poly poly;
     bool initialized;
+    float followCursor;
 };
 
 
@@ -68,6 +69,7 @@ Poly initOctahedron(float r) {
 
 
 uniform Shape uShapes[NS];
+uniform vec3 uCursor;
 
 // Declarations of arrays for spheres, lights and phong shading:
 
@@ -118,7 +120,11 @@ Poly initPoly (Shape shape) {
     }
 }
 
+
+
 vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
+    vec3 cursorOffset = shape.followCursor * vec3(uCursor.xy, 0.);
+    V = V - cursorOffset;
     vec4 VV = vec4(V - shape.center, 1.);
     vec4 WW = vec4(W, 0.);
 
