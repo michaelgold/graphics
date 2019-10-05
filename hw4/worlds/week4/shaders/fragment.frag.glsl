@@ -32,6 +32,7 @@ struct Poly {
     vec4 plane[8];
 };
 
+
 struct Shape {
     int type; //0 sphere, 1 poly
     vec3 center;
@@ -40,6 +41,7 @@ struct Shape {
     mat4 matrix;
     mat4 imatrix; // this is just the inverse of the above
     Poly poly;
+    mat4 quadraticSurface;
     bool initialized;
     float followCursor;
 };
@@ -190,6 +192,24 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
  
 }
 
+vec2 castRaytoCylander(vec3 V, vec3 W, inout Shape shape) {
+
+    vec3 cursorOffset = shape.followCursor * vec3(uCursor.xy, 0.);
+    V = V - cursorOffset;
+    vec4 VV = vec4(V - shape.center, 1.);
+    vec4 WW = vec4(W, 0.);
+
+    float tMin = -1000.;
+    float tMax = 1000.;
+
+    if (shape.initialized != true ) {
+        shape.quadraticSurface = mat4(1,0,0,0, 0,1,0,0, 0,0,0,0, 0,0,0,-1);
+        shape.initialized = true;
+    }
+
+    return vec2(-1., -1.);
+}
+
 
 vec2 rayShape(vec3 V, vec3 W, Shape shape) {
     vec2 roots;
@@ -198,6 +218,8 @@ vec2 rayShape(vec3 V, vec3 W, Shape shape) {
             return castRaytoSphere(V, W, shape);
         case POLY:
             return castRaytoPoly(V, W, shape);
+        case CYLANDER:
+            return castRaytoCylander(V, W, shape);
     }
 }
 
@@ -216,6 +238,8 @@ vec3 computeSurfaceNormal(vec3 P, Shape S) {
         case SPHERE:
             return normalize(P - S.center);
         case POLY:
+            return frontSurfaceNormal;
+        case CYLANDER:
             return frontSurfaceNormal;
     }    
 }
