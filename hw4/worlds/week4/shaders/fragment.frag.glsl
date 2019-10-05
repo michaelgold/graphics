@@ -40,7 +40,7 @@ struct Shape {
     int sides;
     mat4 matrix;
     mat4 imatrix; // this is just the inverse of the above
-    Poly poly;
+    Poly planeSurfaces;
     mat4 quadraticSurface;
     bool initialized;
     float followCursor;
@@ -138,7 +138,7 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
     float tMax = 1000.;
 
     if (shape.initialized != true ) {
-        shape.poly = initPoly(shape);
+        shape.planeSurfaces = initPoly(shape);
         shape.initialized = true;
     }
 
@@ -146,9 +146,9 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
     bool rayMissed = false;
 
     for (int i = 0; i < shape.sides; i++ ) {
-        shape.poly.plane[i] *= shape.imatrix;
+        shape.planeSurfaces.plane[i] *= shape.imatrix;
 
-        vec4 P = shape.poly.plane[i];
+        vec4 P = shape.planeSurfaces.plane[i];
 
         
 
@@ -163,7 +163,7 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
             if (t > 0.) {
                 // case 2
                 if (t > tMin) {
-                    frontSurfaceNormal = shape.poly.plane[i].xyz;
+                    frontSurfaceNormal = shape.planeSurfaces.plane[i].xyz;
                     tMin = t;
                 }
             }
@@ -173,7 +173,7 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
             if (t > 0.) {
                 // case 3
                 if (t < tMax) {
-                    rearSurfaceNormal = shape.poly.plane[i].xyz;
+                    rearSurfaceNormal = shape.planeSurfaces.plane[i].xyz;
                     tMax = t;
                 }
             }
