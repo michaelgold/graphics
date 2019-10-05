@@ -20,6 +20,9 @@ in vec3 vPos;     // -1 < vPos.x < +1
 out vec4 fragColor; 
 const int NS = 7; // Number of spheres in the scene
 const int NL = 2; // Number of light sources in the scene
+const int SPHERE = 0;
+const int POLY = 1;
+const int CYLANDER = 2;
 
 uniform Material uMaterials[NS];
 
@@ -29,6 +32,7 @@ struct Poly {
     vec4 plane[8];
 };
 
+
 struct Shape {
     int type; //0 sphere, 1 poly
     vec3 center;
@@ -37,6 +41,7 @@ struct Shape {
     mat4 matrix;
     mat4 imatrix; // this is just the inverse of the above
     Poly poly;
+    mat4 quadraticSurface;
     bool initialized;
     float followCursor;
 };
@@ -98,6 +103,7 @@ vec2 sortRoots(float roots[2]) {
             return vec2(-1., -1.);
     }
 }
+
         
 vec2 castRaytoSphere(vec3 V, vec3 W, Shape shape) {
     float roots[2];
@@ -186,14 +192,34 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
  
 }
 
+vec2 castRaytoCylander(vec3 V, vec3 W, inout Shape shape) {
+
+    vec3 cursorOffset = shape.followCursor * vec3(uCursor.xy, 0.);
+    V = V - cursorOffset;
+    vec4 VV = vec4(V - shape.center, 1.);
+    vec4 WW = vec4(W, 0.);
+
+    float tMin = -1000.;
+    float tMax = 1000.;
+
+    if (shape.initialized != true ) {
+        shape.quadraticSurface = mat4(1,0,0,0, 0,1,0,0, 0,0,0,0, 0,0,0,-1);
+        shape.initialized = true;
+    }
+
+    return vec2(-1., -1.);
+}
+
 
 vec2 rayShape(vec3 V, vec3 W, Shape shape) {
     vec2 roots;
     switch (shape.type) {
-        case 0:
+        case SPHERE:
             return castRaytoSphere(V, W, shape);
-        case 1:
+        case POLY:
             return castRaytoPoly(V, W, shape);
+        case CYLANDER:
+            return castRaytoCylander(V, W, shape);
     }
 }
 
@@ -209,9 +235,11 @@ bool isInShadow(vec3 P, vec3 L) {
 vec3 computeSurfaceNormal(vec3 P, Shape S) {
 
     switch (S.type) {
-        case 0:
+        case SPHERE:
             return normalize(P - S.center);
-        case 1:
+        case POLY:
+            return frontSurfaceNormal;
+        case CYLANDER:
             return frontSurfaceNormal;
     }    
 }
