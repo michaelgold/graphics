@@ -21,8 +21,9 @@ out vec4 fragColor;
 const int NS = 7; // Number of spheres in the scene
 const int NL = 2; // Number of light sources in the scene
 const int SPHERE = 0;
-const int POLY = 1;
+const int CUBE = 1;
 const int CYLINDER = 2;
+const int OCTAHEDRON = 3;
 
 float a, b, c, d, e, f, g, h, i, j;
 
@@ -120,10 +121,10 @@ vec2 castRaytoSphere(vec3 V, vec3 W, Shape shape) {
 }
 
 Poly initPoly (Shape shape) {
-    switch (shape.sides) {
-        case 6:
+    switch (shape.type) {
+        case CUBE:
             return initCube(shape.size / 2.);
-        case 8:
+        case OCTAHEDRON:
             return initOctahedron(shape.size / 2.);
     }
 }
@@ -271,7 +272,9 @@ vec2 rayShape(vec3 V, vec3 W, Shape shape) {
     switch (shape.type) {
         case SPHERE:
             return castRaytoSphere(V, W, shape);
-        case POLY:
+        case CUBE:
+            return castRaytoPoly(V, W, shape);
+        case OCTAHEDRON:
             return castRaytoPoly(V, W, shape);
         case CYLINDER:
             return castRaytoCylinder(V, W, shape);
@@ -298,7 +301,9 @@ vec3 computeSurfaceNormal(vec3 P, Shape S) {
     switch (S.type) {
         case SPHERE:
             return normalize(P - S.center);
-        case POLY:
+        case CUBE:
+            return frontSurfaceNormal;
+        case OCTAHEDRON:
             return frontSurfaceNormal;
         case CYLINDER:
             return computeQuadraticNormal(P);

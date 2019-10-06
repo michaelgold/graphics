@@ -3,8 +3,9 @@
 let cursor;
 
 const SPHERE = 0;
-const POLY = 1;
-const CYLINDAR = 2;
+const CUBE = 1;
+const CYLINDER = 2;
+const OCTAHEDRON = 3;
 
 async function setup(state) {
     let libSources = await MREditor.loadAndRegisterShaderLibrariesForLiveEditing(gl, "libs", [
@@ -295,7 +296,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[1].transparent        , [.1,.1,0.]);
     gl.uniform1f (state.uMaterialsLoc[1].indexOfRefaction   , 1.79);
 
-    gl.uniform1i (state.uShapesLoc[1].type      , POLY);
+    gl.uniform1i (state.uShapesLoc[1].type      , OCTAHEDRON);
     gl.uniform3fv(state.uShapesLoc[1].center , [0.,0, .85]);
     gl.uniform1f (state.uShapesLoc[1].size      , .3);
     gl.uniform1i (state.uShapesLoc[1].sides      , 8);
@@ -321,7 +322,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[2].transparent        , [.1,.1,.1]);
     gl.uniform1f (state.uMaterialsLoc[2].indexOfRefaction   , 1.79);
 
-    gl.uniform1i (state.uShapesLoc[2].type      , POLY);
+    gl.uniform1i (state.uShapesLoc[2].type      , OCTAHEDRON);
     gl.uniform3fv(state.uShapesLoc[2].center , [0., 0., .7]);
     gl.uniform1f (state.uShapesLoc[2].size      , .2);
     gl.uniform1i (state.uShapesLoc[2].sides      , 8);
@@ -340,7 +341,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[3].transparent        , [.1,.1,.1]);
     gl.uniform1f (state.uMaterialsLoc[3].indexOfRefaction   , 1.79);
 
-    gl.uniform1i (state.uShapesLoc[3].type      , POLY);
+    gl.uniform1i (state.uShapesLoc[3].type      , CUBE);
     gl.uniform3fv(state.uShapesLoc[3].center , [-.08, -.3, .5]);
     gl.uniform1f (state.uShapesLoc[3].size      , .159);
     gl.uniform1i (state.uShapesLoc[3].sides      , 6);
@@ -357,7 +358,7 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[4].transparent        , [.1,.1,.1]);
     gl.uniform1f (state.uMaterialsLoc[4].indexOfRefaction   , 1.79);
 
-    gl.uniform1i (state.uShapesLoc[4].type      , POLY);
+    gl.uniform1i (state.uShapesLoc[4].type      , CUBE);
     gl.uniform3fv(state.uShapesLoc[4].center , [.08, -.3, .5]);
     gl.uniform1f (state.uShapesLoc[4].size      , .159);
     gl.uniform1i (state.uShapesLoc[4].sides      , 6);
@@ -375,7 +376,7 @@ function onStartFrame(t, state) {
     gl.uniform1f (state.uMaterialsLoc[5].indexOfRefaction   , 1.79);
 
 
-    gl.uniform1i (state.uShapesLoc[5].type      , CYLINDAR);
+    gl.uniform1i (state.uShapesLoc[5].type      , CYLINDER);
     gl.uniform3fv(state.uShapesLoc[5].center , [-.2 , .2, .5 ]);
     gl.uniform1f (state.uShapesLoc[5].size      ,  .1);
     gl.uniform1i (state.uShapesLoc[5].sides      , 0);
