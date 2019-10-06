@@ -4,7 +4,7 @@ let cursor;
 
 const SPHERE = 0;
 const POLY = 1;
-const CYLANDER = 2;
+const CYLINDAR = 2;
 
 async function setup(state) {
     let libSources = await MREditor.loadAndRegisterShaderLibrariesForLiveEditing(gl, "libs", [
@@ -205,7 +205,7 @@ let dotProduct = (row, column) => {
     return (row[0] * column[0] + row[1] * column[1] + row[2] * column[2] + row[3] * column[3]);
 }
 
-let matrixMultiply = (matrix, other) => {
+let multiply = (matrix, other) => {
     let result = [];
     for (let column = 0; column < 4; column++) {
         for (let row = 0; row < 4; row++ ) {
@@ -238,6 +238,11 @@ let theta = {
 let x = theta;
 let y = theta;
 let z = theta;
+
+let setMatrix = (loc, mat) => {
+    gl.uniformMatrix4fv(loc['matrix' ], false, mat);
+    gl.uniformMatrix4fv(loc['imatrix'], false, inverse(mat));
+ }
 
 function onStartFrame(t, state) {
 
@@ -296,10 +301,10 @@ function onStartFrame(t, state) {
     gl.uniform1i (state.uShapesLoc[1].sides      , 8);
     gl.uniform1f (state.uShapesLoc[1].followCursor      , 1);
 
-    let redDiamondMatrix = matrixMultiply( rotateY(y.value) , rotateX(x.value) );
+    let redDiamondMatrix = multiply( rotateY(y.value) , rotateX(x.value) );
     // let redDiamondMatrix = rotateY(x.value) ;
     
-    redDiamondMatrix = matrixMultiply (redDiamondMatrix, translate(0 , 0, .01  ));
+    redDiamondMatrix = multiply(redDiamondMatrix, translate(0 , 0, .01  ));
     x.increase(.01);
     y.increase(.01);
 
@@ -357,7 +362,7 @@ function onStartFrame(t, state) {
     gl.uniform1f (state.uShapesLoc[4].size      , .159);
     gl.uniform1i (state.uShapesLoc[4].sides      , 6);
     gl.uniformMatrix4fv(state.uShapesLoc[4].matrix , false, identity());
-    gl.uniformMatrix4fv(state.uShapesLoc[4].imatrix , false, identity());
+    gl.uniformMatrix4fv(state.uShapesLoc[4].imatrix , false, inverse(identity()));
     gl.uniform1f (state.uShapesLoc[4].followCursor      , 0);
 
     // left eye
@@ -369,11 +374,16 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uMaterialsLoc[5].transparent        , [.1,.1,.1]);
     gl.uniform1f (state.uMaterialsLoc[5].indexOfRefaction   , 1.79);
 
-    gl.uniform1i (state.uShapesLoc[5].type      , SPHERE);
-    gl.uniform3fv(state.uShapesLoc[5].center , [-.2 + Math.sin(time)/64 , .2, .5 ]);
-    gl.uniform1f (state.uShapesLoc[5].size      , .1);
+
+    gl.uniform1i (state.uShapesLoc[5].type      , CYLINDAR);
+    gl.uniform3fv(state.uShapesLoc[5].center , [-.2 , .2, .5 ]);
+    gl.uniform1f (state.uShapesLoc[5].size      ,  .1);
     gl.uniform1i (state.uShapesLoc[5].sides      , 0);
     gl.uniform1f (state.uShapesLoc[5].followCursor      , 0);
+
+    let leftEyeMatrix = multiply(scale(.2, .2, .2), rotateY(y.value));
+
+    setMatrix(state.uShapesLoc[5], leftEyeMatrix);
 
     // right eye
     gl.uniform3fv(state.uMaterialsLoc[6].ambient , [0.,0.,0.]);

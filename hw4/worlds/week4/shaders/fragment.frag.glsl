@@ -22,7 +22,9 @@ const int NS = 7; // Number of spheres in the scene
 const int NL = 2; // Number of light sources in the scene
 const int SPHERE = 0;
 const int POLY = 1;
-const int CYLANDER = 2;
+const int CYLINDER = 2;
+
+float a, b, c, d, e, f, g, h, i, j;
 
 uniform Material uMaterials[NS];
 
@@ -126,11 +128,12 @@ Poly initPoly (Shape shape) {
     }
 }
 
-
+vec3 cursorOffset (float followCursor) {
+    return followCursor * vec3(uCursor.xy, 0.);
+}
 
 vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
-    vec3 cursorOffset = shape.followCursor * vec3(uCursor.xy, 0.);
-    V = V - cursorOffset;
+    V = V - cursorOffset(shape.followCursor);
     vec4 VV = vec4(V - shape.center, 1.);
     vec4 WW = vec4(W, 0.);
 
@@ -192,22 +195,74 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
  
 }
 
-vec2 castRaytoCylander(vec3 V, vec3 W, inout Shape shape) {
+vec2 castRaytoCylinder(vec3 V, vec3 W, inout Shape shape) {
+    V = V - cursorOffset(shape.followCursor);
+    // vec4 VV = vec4(V - shape.center, 1.);
+    vec4 VV = vec4(V, 1.);
 
-    vec3 cursorOffset = shape.followCursor * vec3(uCursor.xy, 0.);
-    V = V - cursorOffset;
-    vec4 VV = vec4(V - shape.center, 1.);
     vec4 WW = vec4(W, 0.);
 
-    float tMin = -1000.;
-    float tMax = 1000.;
+    // if (shape.initialized != true ) {
+    //     shape.quadraticSurface = mat4(1,0,0,0, 0,1,0,0, 0,0,0,0, 0,0,0,-1);
+    //     shape.initialized = true;
+    // }
 
-    if (shape.initialized != true ) {
-        shape.quadraticSurface = mat4(1,0,0,0, 0,1,0,0, 0,0,0,0, 0,0,0,-1);
-        shape.initialized = true;
-    }
+    mat4 S = mat4(1.,0.,0.,0., 0.,1.,0.,0., 0.,0.,0.,0., 0.,0.,0.,-1.);
 
-    return vec2(-1., -1.);
+    // mat4 S = quadraticSurface;
+
+
+    S = transpose(shape.imatrix) * S * shape.imatrix;
+
+    // S = mat4( S[0].x, S[0].y+S[1].x, S[0].z+S[2].x, S[0].w+S[3].x,
+    //           0.,     S[1].y       , S[1].z+S[2].y, S[1].w+S[3].y,
+    //           0.,     S[2]
+
+    // );
+
+    S = mat4( S[0].x  ,  S[0].y + S[1].x  ,  S[0].z + S[2].x  ,  S[0].w + S[3].x  , 
+              0.      ,  S[1].y           ,  S[1].z + S[2].y  ,  S[1].w + S[3].y  , 
+              0.      ,  0.               ,  S[2].z           ,  S[2].w + S[3].z  , 
+              0.      ,  0.               ,  0.               ,  S[3].w 
+    ); 
+
+    a = S[0][0];    
+    b = S[0][1];
+    c = S[0][2];
+    d = S[0][3];
+    e = S[1][1];
+    f = S[1][2];
+    g = S[1][3];
+    h = S[2][2];
+    i = S[2][3];
+    j = S[3][3];
+
+
+    float A = a * WW.x * WW.x + b * WW.x * WW.y + c * WW.x * WW.z + 
+              e * WW.y * WW.y + f * WW.y * WW.z + 
+              h * WW.z * WW.z; 
+    
+    float B = a * (VV.x * WW.x + VV.x * WW.x) + b * (VV.x * WW.y + VV.y * WW.x) + 
+              c * (VV.x * WW.z + VV.z * WW.x) + d * WW.x +
+              e * (VV.y * WW.y + VV.y * WW.y) + f * (VV.y * WW.z + VV.z * WW.y) + 
+              g * WW.y + h * (VV.z * WW.z + VV.z * WW.z) + i * WW.z; 
+              
+    float C = a * VV.x * VV.x + b * VV.x * VV.y + c * VV.x * VV.z + d * VV.x +
+              e * VV.y * VV.y + f * VV.y * VV.z + g * VV.y +
+              h * VV.z * VV.z + i * VV.z + j;    
+
+    // A t2 + B t + C ≤ 0
+
+    float roots[2];
+
+    //t = (-B +- sqrt(bb - 4* A * C)) / 2*A
+    
+    float rootPart = sqrt(B * B - (4. * A * C));
+    roots[0] = (-B + rootPart) / (2. * A);
+    roots[1] = (-B - rootPart) / (2. * A);
+
+
+    return sortRoots(roots);
 }
 
 
@@ -218,8 +273,8 @@ vec2 rayShape(vec3 V, vec3 W, Shape shape) {
             return castRaytoSphere(V, W, shape);
         case POLY:
             return castRaytoPoly(V, W, shape);
-        case CYLANDER:
-            return castRaytoCylander(V, W, shape);
+        case CYLINDER:
+            return castRaytoCylinder(V, W, shape);
     }
 }
 
@@ -232,6 +287,12 @@ bool isInShadow(vec3 P, vec3 L) {
     return false;
 }
 
+vec3 computeQuadraticNormal(vec3 P) {
+    return normalize( vec3( 2. * a * P.x  +  b * P.y  +  c * P.z  +  d,
+                                        2. * e * P.y  +  f * P.z  +  g,
+                                                    2. * h * P.z  +  i ) );
+}
+
 vec3 computeSurfaceNormal(vec3 P, Shape S) {
 
     switch (S.type) {
@@ -239,8 +300,8 @@ vec3 computeSurfaceNormal(vec3 P, Shape S) {
             return normalize(P - S.center);
         case POLY:
             return frontSurfaceNormal;
-        case CYLANDER:
-            return frontSurfaceNormal;
+        case CYLINDER:
+            return computeQuadraticNormal(P);
     }    
 }
 
