@@ -421,6 +421,22 @@ function onStartFrame(t, state) {
     setGeometry(state.uShapesLoc[2], noseGeometry);
 
 
+    // right eye
+    gl.uniform3fv(state.uMaterialsLoc[3].ambient , [0.,0.,0.]);
+    gl.uniform3fv(state.uMaterialsLoc[3].diffuse , [0.1,0.1,0.1]);
+    gl.uniform3fv(state.uMaterialsLoc[3].specular, [1.,1.,1.]);
+    gl.uniform3fv(state.uMaterialsLoc[3].reflect , [0.1,0.1,0.1]);
+    gl.uniform1f (state.uMaterialsLoc[3].power   , 20.);
+    gl.uniform3fv(state.uMaterialsLoc[3].transparent        , [.1,.1,.1]);
+    gl.uniform1f (state.uMaterialsLoc[3].indexOfRefaction   , 1.79);
+
+    gl.uniform1i (state.uShapesLoc[3].type      , SPHERE);
+    gl.uniform3fv(state.uShapesLoc[3].center , [.2 + Math.sin(time)/64 , .2, .5]);
+    gl.uniform1f (state.uShapesLoc[3].size      , .1);
+    gl.uniform1i (state.uShapesLoc[3].sides      , 0);
+    gl.uniform1f (state.uShapesLoc[3].followCursor      , 0);
+
+
     // // left part of mouth
     // gl.uniform3fv(state.uMaterialsLoc[3].ambient , [0.,0.,0.]);
     // gl.uniform3fv(state.uMaterialsLoc[3].diffuse , [0.1,0.1,0.1]);
@@ -475,20 +491,7 @@ function onStartFrame(t, state) {
 
     // setMatrix(state.uShapesLoc[5], leftEyeMatrix);
 
-    // right eye
-    gl.uniform3fv(state.uMaterialsLoc[6].ambient , [0.,0.,0.]);
-    gl.uniform3fv(state.uMaterialsLoc[6].diffuse , [0.1,0.1,0.1]);
-    gl.uniform3fv(state.uMaterialsLoc[6].specular, [1.,1.,1.]);
-    gl.uniform3fv(state.uMaterialsLoc[6].reflect , [0.1,0.1,0.1]);
-    gl.uniform1f (state.uMaterialsLoc[6].power   , 20.);
-    gl.uniform3fv(state.uMaterialsLoc[6].transparent        , [.1,.1,.1]);
-    gl.uniform1f (state.uMaterialsLoc[6].indexOfRefaction   , 1.79);
 
-    gl.uniform1i (state.uShapesLoc[6].type      , SPHERE);
-    gl.uniform3fv(state.uShapesLoc[6].center , [.2 + Math.sin(time)/64 , .2, .5]);
-    gl.uniform1f (state.uShapesLoc[6].size      , .1);
-    gl.uniform1i (state.uShapesLoc[6].sides      , 0);
-    gl.uniform1f (state.uShapesLoc[6].followCursor      , 0);
 
     gl.enable(gl.DEPTH_TEST);
 }

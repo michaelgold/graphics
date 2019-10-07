@@ -18,7 +18,7 @@ in vec3 vPos;     // -1 < vPos.x < +1
 //      vPos.z == 0
 
 out vec4 fragColor; 
-const int NS = 7; // Number of spheres in the scene
+const int NS = 4; // Number of shapes in the scene
 const int NL = 2; // Number of light sources in the scene
 const int SPHERE = 0;
 const int CUBE = 1;
