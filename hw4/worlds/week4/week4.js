@@ -377,12 +377,12 @@ function onStartFrame(t, state) {
 
 
     gl.uniform1i (state.uShapesLoc[5].type      , CYLINDER);
-    gl.uniform3fv(state.uShapesLoc[5].center , [-.2 , .2, .5 ]);
-    gl.uniform1f (state.uShapesLoc[5].size      ,  .1);
-    gl.uniform1i (state.uShapesLoc[5].sides      , 0);
+    gl.uniform3fv(state.uShapesLoc[5].center , [0. , 0., 0. ]);
+    gl.uniform1f (state.uShapesLoc[5].size      ,  .3);
+    gl.uniform1i (state.uShapesLoc[5].sides      , 2);
     gl.uniform1f (state.uShapesLoc[5].followCursor      , 0);
 
-    let leftEyeMatrix = multiply(scale(.2, .2, .2), rotateY(y.value));
+    let leftEyeMatrix = multiply(scale(.2, .3, .2), rotateY(y.value));
 
     setMatrix(state.uShapesLoc[5], leftEyeMatrix);
 

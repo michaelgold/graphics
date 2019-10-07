@@ -76,6 +76,13 @@ Poly initOctahedron(float r) {
 }
 
 
+Poly initCylinder() {
+    Poly p;
+    p.plane[0] = vec4( 0., 0.,-1.,-1. );
+    p.plane[1] = vec4( 0., 0.,1.,-1.);
+    return p;
+}
+
 uniform Shape uShapes[NS];
 uniform vec3 uCursor;
 
@@ -126,6 +133,8 @@ Poly initPoly (Shape shape) {
             return initCube(shape.size / 2.);
         case OCTAHEDRON:
             return initOctahedron(shape.size / 2.);
+        case CYLINDER:
+            return initCylinder();
     }
 }
 
@@ -153,8 +162,6 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
         shape.planeSurfaces.plane[i] *= shape.imatrix;
 
         vec4 P = shape.planeSurfaces.plane[i];
-
-        
 
         float t = -(dot(P, VV)) / dot(P,WW);
 
@@ -262,8 +269,15 @@ vec2 castRaytoCylinder(vec3 V, vec3 W, inout Shape shape) {
     roots[0] = (-B + rootPart) / (2. * A);
     roots[1] = (-B - rootPart) / (2. * A);
 
+    vec2 tCandidate = sortRoots(roots);
 
-    return sortRoots(roots);
+    vec2 halfSpace = castRaytoPoly(V, W, shape);
+
+    if (tCandidate[0] <= halfSpace[0]) {
+        return tCandidate;
+    }
+
+    return vec2(-1., -1.);
 }
 
 
