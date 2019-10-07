@@ -97,6 +97,15 @@ async function setup(state) {
                     state.uShapesLoc[i].matrix = gl.getUniformLocation(program, 'uShapes['+i+'].matrix');
                     state.uShapesLoc[i].imatrix = gl.getUniformLocation(program, 'uShapes['+i+'].imatrix');
                     state.uShapesLoc[i].followCursor = gl.getUniformLocation(program, 'uShapes['+i+'].followCursor');
+                    
+                    state.uShapesLoc[i].plane1 = gl.getUniformLocation(program, 'uShapes['+i+'].plane1');
+                    state.uShapesLoc[i].plane2 = gl.getUniformLocation(program, 'uShapes['+i+'].plane2');
+                    state.uShapesLoc[i].plane3 = gl.getUniformLocation(program, 'uShapes['+i+'].plane3');
+                    state.uShapesLoc[i].plane4 = gl.getUniformLocation(program, 'uShapes['+i+'].plane4');
+                    state.uShapesLoc[i].plane5 = gl.getUniformLocation(program, 'uShapes['+i+'].plane5');
+                    state.uShapesLoc[i].plane6 = gl.getUniformLocation(program, 'uShapes['+i+'].plane6');
+                    state.uShapesLoc[i].plane7 = gl.getUniformLocation(program, 'uShapes['+i+'].plane7');
+                    state.uShapesLoc[i].plane8 = gl.getUniformLocation(program, 'uShapes['+i+'].plane8');
                 }
 
 
@@ -142,6 +151,10 @@ async function setup(state) {
 
 
 }
+
+
+
+
 
 // I HAVE IMPLEMENTED inverse() FOR YOU. FOR HOMEWORK, YOU WILL STILL NEED TO IMPLEMENT:
 // identity(), translate(x,y,z), rotateX(a), rotateY(a) rotateZ(a), scale(x,y,z), multiply(A,B)
@@ -214,6 +227,73 @@ let multiply = (matrix, other) => {
         }
     }
     return result;
+}
+
+let r = 2;
+
+let cubeGeometry = {
+                    plane1: [],
+                    plane2: [],
+                    plane3: [],
+                    plane4: [],
+                    plane5: [],
+                    plane6: [],
+                    plane7: [0.,0.,0.,0.],
+                    plane8: [0.,0.,0.,0.],
+                    set: function(r) {
+                        this.plane1 = [-1.,  0.,  0., -r];
+                        this.plane2 = [1.,  0.,  0., -r],
+                        this.plane3 = [0., -1.,  0., -r],
+                        this.plane4 = [0.,  1.,  0., -r],
+                        this.plane5 = [0.,  0., -1., -r],
+                        this.plane6 = [0.,  0.,  1., -r]; 
+                    }
+                } 
+
+let octahedronGeometry = {
+    plane1: [],
+    plane2: [],
+    plane3: [],
+    plane4: [],
+    plane5: [],
+    plane6: [],
+    plane7: [],
+    plane8: [],
+    set: function(r) {
+        let r3 =  1 / Math.sqrt(3);
+        this.plane1 = [ -r3,  -r3,  -r3, -r];
+        this.plane2 = [r3,  -r3,  -r3, -r];
+        this.plane3 = [-r3,   r3,  -r3, -r,];
+        this.plane4 = [r3,   r3,  -r3, -r];
+        this.plane5 = [-r3,  -r3,   r3, -r];
+        this.plane6 = [r3,  -r3,   r3, -r];
+        this.plane7 = [-r3,   r3,   r3, -r];
+        this.plane8 = [r3,   r3,   r3, -r];
+        return this;
+    }
+}
+
+let cylinderGeometry = {
+    plane1: [0., 0.,-1.,-1.],
+    plane2: [0., 0., 1., -1.],
+    plane3: [0. ,0. ,0. ,0.],
+    plane4: [0. ,0. ,0. ,0.],
+    plane5: [0. ,0. ,0. ,0.],
+    plane6: [0. ,0. ,0. ,0.],
+    plane7: [0. ,0. ,0. ,0.],
+    plane8: [0. ,0. ,0. ,0.]
+}
+                       
+
+let setGeometry = (loc, geometry) => {
+    gl.uniform4fv(loc['plane1'], geometry.plane1);
+    gl.uniform4fv(loc['plane2'], geometry.plane2);
+    gl.uniform4fv(loc['plane3'], geometry.plane3);
+    gl.uniform4fv(loc['plane4'], geometry.plane4);
+    gl.uniform4fv(loc['plane5'], geometry.plane5);
+    gl.uniform4fv(loc['plane6'], geometry.plane6);
+    gl.uniform4fv(loc['plane7'], geometry.plane7);
+    gl.uniform4fv(loc['plane8'], geometry.plane8);
 }
 
 // NOTE: t is the elapsed time since system start in ms, but
@@ -302,15 +382,19 @@ function onStartFrame(t, state) {
     gl.uniform1i (state.uShapesLoc[1].sides      , 8);
     gl.uniform1f (state.uShapesLoc[1].followCursor      , 1);
 
-    let redDiamondMatrix = multiply( rotateY(y.value) , rotateX(x.value) );
+    let diamondSize = 0.3;
+    let diamondGeometry = octahedronGeometry.set(diamondSize);
+
+    setGeometry(state.uShapesLoc[1], diamondGeometry);
+
+    let redDiamondMatrix = multiply( translate (0,0, .7), ( multiply( scale(.5,.5,.5),  multiply( rotateY(y.value) , rotateX(x.value) ) )));
     // let redDiamondMatrix = rotateY(x.value) ;
     
-    redDiamondMatrix = multiply(redDiamondMatrix, translate(0 , 0, .01  ));
+    redDiamondMatrix =  multiply(redDiamondMatrix, translate(0 , 0, .01  ));
     x.increase(.01);
     y.increase(.01);
 
-    gl.uniformMatrix4fv(state.uShapesLoc[1].matrix , false, redDiamondMatrix);
-    gl.uniformMatrix4fv(state.uShapesLoc[1].imatrix , false, inverse(redDiamondMatrix));
+    setMatrix(state.uShapesLoc[1], redDiamondMatrix);
     
 
     // nose
@@ -326,10 +410,15 @@ function onStartFrame(t, state) {
     gl.uniform3fv(state.uShapesLoc[2].center , [0., 0., .7]);
     gl.uniform1f (state.uShapesLoc[2].size      , .2);
     gl.uniform1i (state.uShapesLoc[2].sides      , 8);
-    gl.uniformMatrix4fv(state.uShapesLoc[2].matrix , false, identity());
-    gl.uniformMatrix4fv(state.uShapesLoc[2].imatrix , false, identity());
-    gl.uniform1f (state.uShapesLoc[2].followCursor      , 0);
     
+
+    let noseSize = 0.3;
+    let noseGeometry = octahedronGeometry.set(noseSize);
+    let noseMatrix  = multiply(translate(.5,0,.3), scale(0.5,0.5,0.5));
+    setMatrix(state.uShapesLoc[2], noseMatrix);
+
+    gl.uniform1f (state.uShapesLoc[2].followCursor      , 0);
+    setGeometry(state.uShapesLoc[2], noseGeometry);
 
 
     // left part of mouth
@@ -349,42 +438,42 @@ function onStartFrame(t, state) {
     gl.uniformMatrix4fv(state.uShapesLoc[3].imatrix , false, identity());
     gl.uniform1f (state.uShapesLoc[3].followCursor      , 0);
 
-    // right part of mouth
-    gl.uniform3fv(state.uMaterialsLoc[4].ambient , [0.,0.,0.]);
-    gl.uniform3fv(state.uMaterialsLoc[4].diffuse , [0.1,0.1,0.1]);
-    gl.uniform3fv(state.uMaterialsLoc[4].specular, [1.,1.,1.]);
-    gl.uniform3fv(state.uMaterialsLoc[4].reflect , [0.1,0.1,0.1]);
-    gl.uniform1f (state.uMaterialsLoc[4].power   , 20.);
-    gl.uniform3fv(state.uMaterialsLoc[4].transparent        , [.1,.1,.1]);
-    gl.uniform1f (state.uMaterialsLoc[4].indexOfRefaction   , 1.79);
+    // // right part of mouth
+    // gl.uniform3fv(state.uMaterialsLoc[4].ambient , [0.,0.,0.]);
+    // gl.uniform3fv(state.uMaterialsLoc[4].diffuse , [0.1,0.1,0.1]);
+    // gl.uniform3fv(state.uMaterialsLoc[4].specular, [1.,1.,1.]);
+    // gl.uniform3fv(state.uMaterialsLoc[4].reflect , [0.1,0.1,0.1]);
+    // gl.uniform1f (state.uMaterialsLoc[4].power   , 20.);
+    // gl.uniform3fv(state.uMaterialsLoc[4].transparent        , [.1,.1,.1]);
+    // gl.uniform1f (state.uMaterialsLoc[4].indexOfRefaction   , 1.79);
 
-    gl.uniform1i (state.uShapesLoc[4].type      , CUBE);
-    gl.uniform3fv(state.uShapesLoc[4].center , [.08, -.3, .5]);
-    gl.uniform1f (state.uShapesLoc[4].size      , .159);
-    gl.uniform1i (state.uShapesLoc[4].sides      , 6);
-    gl.uniformMatrix4fv(state.uShapesLoc[4].matrix , false, identity());
-    gl.uniformMatrix4fv(state.uShapesLoc[4].imatrix , false, inverse(identity()));
-    gl.uniform1f (state.uShapesLoc[4].followCursor      , 0);
+    // gl.uniform1i (state.uShapesLoc[4].type      , CUBE);
+    // gl.uniform3fv(state.uShapesLoc[4].center , [.08, -.3, .5]);
+    // gl.uniform1f (state.uShapesLoc[4].size      , .159);
+    // gl.uniform1i (state.uShapesLoc[4].sides      , 6);
+    // gl.uniformMatrix4fv(state.uShapesLoc[4].matrix , false, identity());
+    // gl.uniformMatrix4fv(state.uShapesLoc[4].imatrix , false, inverse(identity()));
+    // gl.uniform1f (state.uShapesLoc[4].followCursor      , 0);
 
     // left eye
-    gl.uniform3fv(state.uMaterialsLoc[5].ambient , [0.,0.,0.]);
-    gl.uniform3fv(state.uMaterialsLoc[5].diffuse , [0.1,0.1,0.1]);
-    gl.uniform3fv(state.uMaterialsLoc[5].specular, [1.,1.,1.]);
-    gl.uniform3fv(state.uMaterialsLoc[5].reflect , [0.1,0.1,0.1]);
-    gl.uniform1f (state.uMaterialsLoc[5].power   , 20.);
-    gl.uniform3fv(state.uMaterialsLoc[5].transparent        , [.1,.1,.1]);
-    gl.uniform1f (state.uMaterialsLoc[5].indexOfRefaction   , 1.79);
+    // gl.uniform3fv(state.uMaterialsLoc[5].ambient , [0.,0.,0.]);
+    // gl.uniform3fv(state.uMaterialsLoc[5].diffuse , [0.1,0.1,0.1]);
+    // gl.uniform3fv(state.uMaterialsLoc[5].specular, [1.,1.,1.]);
+    // gl.uniform3fv(state.uMaterialsLoc[5].reflect , [0.1,0.1,0.1]);
+    // gl.uniform1f (state.uMaterialsLoc[5].power   , 20.);
+    // gl.uniform3fv(state.uMaterialsLoc[5].transparent        , [.1,.1,.1]);
+    // gl.uniform1f (state.uMaterialsLoc[5].indexOfRefaction   , 1.79);
 
 
-    gl.uniform1i (state.uShapesLoc[5].type      , CYLINDER);
-    gl.uniform3fv(state.uShapesLoc[5].center , [-.2 , .2, .5 ]);
-    gl.uniform1f (state.uShapesLoc[5].size      ,  .1);
-    gl.uniform1i (state.uShapesLoc[5].sides      , 0);
-    gl.uniform1f (state.uShapesLoc[5].followCursor      , 0);
+    // gl.uniform1i (state.uShapesLoc[5].type      , CUBE);
+    // gl.uniform3fv(state.uShapesLoc[5].center , [-.2 , .2, .5 ]);
+    // gl.uniform1f (state.uShapesLoc[5].size      ,  .1);
+    // gl.uniform1i (state.uShapesLoc[5].sides      , 0);
+    // gl.uniform1f (state.uShapesLoc[5].followCursor      , 0);
 
-    let leftEyeMatrix = multiply(scale(.2, .2, .2), rotateY(y.value));
+    // let leftEyeMatrix = multiply(scale(.2, .2, .2), rotateY(y.value));
 
-    setMatrix(state.uShapesLoc[5], leftEyeMatrix);
+    // setMatrix(state.uShapesLoc[5], leftEyeMatrix);
 
     // right eye
     gl.uniform3fv(state.uMaterialsLoc[6].ambient , [0.,0.,0.]);
@@ -403,8 +492,6 @@ function onStartFrame(t, state) {
 
     gl.enable(gl.DEPTH_TEST);
 }
-
-
 
 
 

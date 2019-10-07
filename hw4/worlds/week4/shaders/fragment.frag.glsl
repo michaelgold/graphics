@@ -25,6 +25,11 @@ const int CUBE = 1;
 const int CYLINDER = 2;
 const int OCTAHEDRON = 3;
 
+const int CYLINDERSURFACES = 2;
+const int CUBESURFACES = 6;
+const int OCTAHEDRONSURFACES = 8;
+
+
 float a, b, c, d, e, f, g, h, i, j;
 
 uniform Material uMaterials[NS];
@@ -43,37 +48,17 @@ struct Shape {
     int sides;
     mat4 matrix;
     mat4 imatrix; // this is just the inverse of the above
-    Poly planeSurfaces;
     mat4 quadraticSurface;
-    bool initialized;
+    vec4 plane1;
+    vec4 plane2;
+    vec4 plane3;
+    vec4 plane4;
+    vec4 plane5;
+    vec4 plane6;
+    vec4 plane7;
+    vec4 plane8;
     float followCursor;
 };
-
-
-Poly initCube(float r) {
-    Poly c;
-    c.plane[0] = vec4(-1.,  0.,  0., -r);
-    c.plane[1] = vec4( 1.,  0.,  0., -r);
-    c.plane[2] = vec4( 0., -1.,  0., -r);
-    c.plane[3] = vec4( 0.,  1.,  0., -r);
-    c.plane[4] = vec4( 0.,  0., -1., -r);
-    c.plane[5] = vec4( 0.,  0.,  1., -r);
-    return c;
-}
-
-Poly initOctahedron(float r) {
-    Poly p;
-    float r3 = 1. / sqrt(3.);
-    p.plane[0] = vec4(-r3,  -r3,  -r3, -r);
-    p.plane[1] = vec4( r3,  -r3,  -r3, -r);
-    p.plane[2] = vec4(-r3,   r3,  -r3, -r);
-    p.plane[3] = vec4( r3,   r3,  -r3, -r);
-    p.plane[4] = vec4(-r3,  -r3,   r3, -r);
-    p.plane[5] = vec4( r3,  -r3,   r3, -r);
-    p.plane[6] = vec4(-r3,   r3,   r3, -r);
-    p.plane[7] = vec4( r3,   r3,   r3, -r);
-    return p;
-}
 
 
 uniform Shape uShapes[NS];
@@ -100,10 +85,13 @@ vec2 sortRoots(float roots[2]) {
     switch (minIndex) {
         case 0:
             return vec2(roots[0], roots[1]);
+            break;
         case 1:
             return vec2(roots[1], roots[0]);
+            break;
         case -1:
             return vec2(-1., -1.);
+            break;
     }
 }
 
@@ -120,41 +108,53 @@ vec2 castRaytoSphere(vec3 V, vec3 W, Shape shape) {
     return sortRoots(roots);
 }
 
-Poly initPoly (Shape shape) {
-    switch (shape.type) {
-        case CUBE:
-            return initCube(shape.size / 2.);
-        case OCTAHEDRON:
-            return initOctahedron(shape.size / 2.);
-    }
-}
+
 
 vec3 cursorOffset (float followCursor) {
     return followCursor * vec3(uCursor.xy, 0.);
 }
 
-vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
+int getShapeSurfaces (int type) {
+switch (type) {
+    case CYLINDER:
+        return CYLINDERSURFACES;
+        break;
+    case CUBE:
+        return CUBESURFACES;
+        break;
+    case OCTAHEDRON:
+        return OCTAHEDRONSURFACES;
+        break;
+    }
+}
+
+vec2 castRaytoPoly(vec3 V, vec3 W, Shape shape) {
     V = V - cursorOffset(shape.followCursor);
-    vec4 VV = vec4(V - shape.center, 1.);
+    vec4 VV = vec4(V, 1.);
     vec4 WW = vec4(W, 0.);
 
     float tMin = -1000.;
     float tMax = 1000.;
 
-    if (shape.initialized != true ) {
-        shape.planeSurfaces = initPoly(shape);
-        shape.initialized = true;
-    }
 
-    
     bool rayMissed = false;
 
-    for (int i = 0; i < shape.sides; i++ ) {
-        shape.planeSurfaces.plane[i] *= shape.imatrix;
+    int numberOfSurfaces = getShapeSurfaces(shape.type);
 
-        vec4 P = shape.planeSurfaces.plane[i];
+    vec4[8] plane;
+    plane[0] = shape.plane1;
+    plane[1] = shape.plane2;
+    plane[2] = shape.plane3;
+    plane[3] = shape.plane4;
+    plane[4] = shape.plane5;
+    plane[5] = shape.plane6;
+    plane[6] = shape.plane7;
+    plane[7] = shape.plane8;
 
-        
+    for (int i = 0; i < numberOfSurfaces; i++ ) {
+        vec4 P = plane[i] *= shape.imatrix;
+
+        // vec4 P = planeSurfaces.plane[i];
 
         float t = -(dot(P, VV)) / dot(P,WW);
 
@@ -167,7 +167,7 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
             if (t > 0.) {
                 // case 2
                 if (t > tMin) {
-                    frontSurfaceNormal = shape.planeSurfaces.plane[i].xyz;
+                    frontSurfaceNormal = plane[i].xyz;
                     tMin = t;
                 }
             }
@@ -177,7 +177,7 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
             if (t > 0.) {
                 // case 3
                 if (t < tMax) {
-                    rearSurfaceNormal = shape.planeSurfaces.plane[i].xyz;
+                    rearSurfaceNormal = plane[i].xyz;
                     tMax = t;
                 }
             }
@@ -196,17 +196,12 @@ vec2 castRaytoPoly(vec3 V, vec3 W, inout Shape shape) {
  
 }
 
-vec2 castRaytoCylinder(vec3 V, vec3 W, inout Shape shape) {
+vec2 castRaytoCylinder(vec3 V, vec3 W, Shape shape) {
     V = V - cursorOffset(shape.followCursor);
-    // vec4 VV = vec4(V - shape.center, 1.);
+
     vec4 VV = vec4(V, 1.);
 
     vec4 WW = vec4(W, 0.);
-
-    // if (shape.initialized != true ) {
-    //     shape.quadraticSurface = mat4(1,0,0,0, 0,1,0,0, 0,0,0,0, 0,0,0,-1);
-    //     shape.initialized = true;
-    // }
 
     mat4 S = mat4(1.,0.,0.,0., 0.,1.,0.,0., 0.,0.,0.,0., 0.,0.,0.,-1.);
 
@@ -215,11 +210,6 @@ vec2 castRaytoCylinder(vec3 V, vec3 W, inout Shape shape) {
 
     S = transpose(shape.imatrix) * S * shape.imatrix;
 
-    // S = mat4( S[0].x, S[0].y+S[1].x, S[0].z+S[2].x, S[0].w+S[3].x,
-    //           0.,     S[1].y       , S[1].z+S[2].y, S[1].w+S[3].y,
-    //           0.,     S[2]
-
-    // );
 
     S = mat4( S[0].x  ,  S[0].y + S[1].x  ,  S[0].z + S[2].x  ,  S[0].w + S[3].x  , 
               0.      ,  S[1].y           ,  S[1].z + S[2].y  ,  S[1].w + S[3].y  , 
@@ -272,12 +262,16 @@ vec2 rayShape(vec3 V, vec3 W, Shape shape) {
     switch (shape.type) {
         case SPHERE:
             return castRaytoSphere(V, W, shape);
+            break;
         case CUBE:
             return castRaytoPoly(V, W, shape);
+            break;
         case OCTAHEDRON:
             return castRaytoPoly(V, W, shape);
+            break;
         case CYLINDER:
             return castRaytoCylinder(V, W, shape);
+            break;
     }
 }
 
@@ -301,12 +295,16 @@ vec3 computeSurfaceNormal(vec3 P, Shape S) {
     switch (S.type) {
         case SPHERE:
             return normalize(P - S.center);
+            break;
         case CUBE:
             return frontSurfaceNormal;
+            break;
         case OCTAHEDRON:
             return frontSurfaceNormal;
+            break;
         case CYLINDER:
             return computeQuadraticNormal(P);
+            break;
     }    
 }
 
@@ -317,7 +315,7 @@ vec3 phongShading(vec3 P, vec3 N, Shape S, Material M) {
     vec3 specularComponent = vec3(0.,0.,0.);
     vec3 diffuseComponent = vec3(0.,0.,0.);
 
-    for (int j = 0; j < Ldir.length(); j++) {
+    for (int j = 0; j < NL; j++) {
         vec3 R = 2. * dot(N,Ldir[j]) * N - Ldir[j];
         if (!isInShadow(P, Ldir[j])) {
             specularComponent += Lcol[j] * (M.specular * pow(max(0., dot(E,R) ), M.power));
@@ -403,7 +401,6 @@ vec3 addRefraction(Material material, Shape shape) {
     return vec3(0.,0.,0.);
 }
 
-
 void main() {
     Ldir[0] = normalize(vec3(1.,1.,.5));
     Lcol[0] = vec3(1.,1.,1.);
@@ -413,7 +410,7 @@ void main() {
 
     float tMin = 1000.;
 
-    for (int i = 0; i < uShapes.length(); i++) {
+    for (int i = 0; i < NS; i++) {
         V = vec3(0,0,fl);
         W = normalize(vec3(vPos.x, vPos.y, -fl));
         t = rayShape(V, W, uShapes[i]).x;
@@ -432,6 +429,5 @@ void main() {
         }
         
         fragColor = vec4(sqrt(color), 1.);
-
     }
 }
