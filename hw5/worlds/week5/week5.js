@@ -372,51 +372,62 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
     m.save(); // hips
         m.translate(0, .5 - Math.sin(state.time * 5.3) * .3, 0);
         m.rotateY( Math.sin(3 * state.time) *.2);
-        
-   
 
+        m.save() // spine
 
-        m.save() // torso
-            m.rotateX(.4 - Math.sin(3 * state.time) *.2);
+            m.rotateX(.1 - Math.sin(1.5 * state.time) *.1);
+            
 
-            m.save() // head
-                m.translate(0,1.1,0);
-                m.rotateZ( Math.sin(3 * state.time) *.1);
-                
-                m.scale(.2,.2,.1);
-                drawGeometry();
-            m.restore()
+            m.save() // torso
+                m.rotateX(.2 - Math.sin(3 * state.time) *.05);
+                m.rotateY( Math.sin(3 * state.time) *.2);
+            
+
+                m.save() // head
+                    m.translate(0,1.1,0);
+                    m.rotateZ( Math.sin(3 * state.time) *.1);
+                    
+                    m.scale(.2,.2,.1);
+                    drawGeometry();
+                m.restore()
         
          
 
-    for (let side = -1 ; side <= 1 ; side += 2) {
-       let theta = Math.sin(3 * state.time) * side;
-    //    console.log(theta);
-    //    console.log(phase.check());
-       armPhase.check(theta);
-        m.save();
-          m.translate(side * .4,.7,0);
-          m.rotateZ(theta);               // SHOULDER
-          m.rotateY(-side + .5 * theta);
-          m.translate(side * .3,0,0);
-          m.save();
-            m.scale(.3,.05,.05);
+                for (let side = -1 ; side <= 1 ; side += 2) {
+                let theta = Math.sin(3 * state.time) * side;
+                //    console.log(theta);
+                //    console.log(phase.check());
+                armPhase.check(theta);
+                    m.save();
+                    m.translate(side * .4,.7,0);
+                    m.rotateZ(theta);               // SHOULDER
+                    m.rotateY(-side + .5 * theta);
+                    m.translate(side * .3,0,0);
+                    m.save();
+                        m.scale(.3,.05,.05);
+                        drawGeometry();
+                    m.restore();
+                    m.translate(side * .3,0,0);
+                    m.rotateZ(theta);              // ELBOW
+                    m.translate(side * .3,0,0);
+                    m.save();
+                        m.scale(.3,.05,.05);
+                        
+                        drawGeometry();
+                    m.restore();
+                    m.restore();
+                    m.save();
+                }
+            m.rotateY( Math.sin(3 * state.time) *.1);
+            m.translate(0,.5,0);   
+            m.scale(.3,.3,.2);
             drawGeometry();
-          m.restore();
-          m.translate(side * .3,0,0);
-          m.rotateZ(theta);              // ELBOW
-          m.translate(side * .3,0,0);
-          m.save();
-            m.scale(.3,.05,.05);
-              
-            drawGeometry();
-          m.restore();
-        m.restore();
-        m.save();
-    }
-    m.translate(0,.5,0);   
-    m.scale(.3,.3,.2);
-    drawGeometry();
+            m.restore();
+        
+        
+        m.translate(0, .15, 0);
+        m.scale(.1,.05,.1);
+        drawGeometry();
     m.restore();
 
     for (let side = -1 ; side <= 1 ; side += 2) {
