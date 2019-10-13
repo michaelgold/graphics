@@ -176,12 +176,69 @@ async function setup(state) {
 //                                                                   //
  /////////////////////////////////////////////////////////////////////
 
-let identity = ()       => [];
-let rotateX = t         => [];
-let rotateY = t         => [];
-let rotateZ = t         => [];
-let scale = (x,y,z)     => [];
-let translate = (x,y,z) => [];
+
+
+
+
+  
+  let identity = () => {
+      return [ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 ];
+  }
+  
+  let translate = (x, y, z) => {
+      return [ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 ];
+  }
+  
+  let rotateX = (theta) => {
+      let c = Math.cos(theta);
+      let s = Math.sin(theta); 
+      return [ 1, 0, 0, 0,  0, c, s, 0,  0, -s, c, 0,  0, 0, 0, 1 ];
+  }
+  
+  let rotateY = (theta) => {
+      let c = Math.cos(theta);
+      let s = Math.sin(theta); 
+      return [ c, 0, -s, 0,  0, 1, 0, 0,  s, 0, c, 0,  0, 0, 0, 1 ];
+  }
+  
+  let rotateZ = (theta) => {
+      let c = Math.cos(theta);
+      let s = Math.sin(theta); 
+      return [ c, s, 0, 0,  -s, c, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 ];
+  }
+  
+  let scale = (x, y, z) => {
+      return [ x, 0, 0, 0,  0, y, 0, 0,  0, 0, z, 0,  0, 0, 0, 1 ];
+  }
+  
+  let perspective = (x, y, z, w) => {
+      return [ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, w ];
+  }
+  
+//   let getRow = (matrix, row) => {
+//       return [ matrix[row], matrix[row + 4], matrix[row + 8], matrix[row + 12] ]
+//   }
+  
+//   let getColumn = (matrix, column) => {
+//       column = column * 4;
+//       return [ matrix[column], matrix[column + 1], matrix[column + 2], matrix[column + 3] ];
+//   }
+  
+//   let dotProduct = (row, column) => {
+//       return (row[0] * column[0] + row[1] * column[1] + row[2] * column[2] + row[3] * column[3]);
+//   }
+  
+//   let multiply = (matrix, other) => {
+//       let result = [];
+//       for (let column = 0; column < 4; column++) {
+//           for (let row = 0; row < 4; row++ ) {
+//               result.push(dotProduct(getRow(matrix, row), getColumn(other, column)));
+//           }
+//       }
+//       return result;
+//   }
+  
+
 
 let inverse = src => {
   let dst = [], det = 0, cofactor = (c, r) => {
@@ -251,6 +308,48 @@ function onStartFrame(t, state) {
     gl.enable(gl.DEPTH_TEST);
 }
 
+let phase = {
+    count: 0,
+    value: 1,
+    directionUp: true,
+    deltaTheta: 0,
+    theta: 0,
+    increase: function() {
+        this.count++;
+    },
+    isDirectionDifferent: function() {
+        if (!this.directionUp && this.deltaTheta > 0) {
+            this.directionUp = true;
+            return true;
+        }
+        if (this.directionUp && this.deltaTheta < 0) {
+            this.directionUp = false;
+            return true;
+        }
+        return false;
+
+    },
+    set: function() {
+        if (this.count %2 == 0) {
+            this.value = -1;
+        } else {
+            this.value = 1;
+        }
+    },
+    check: function(theta) {
+        this.deltaTheta = theta - this.theta;
+        this.theta = theta;
+        if (this.isDirectionDifferent()) {
+            console.log(this);
+            this.count++;
+            this.set();
+        }
+        return this.value;
+    }
+}
+
+let armPhase = phase;
+
 function onDraw(t, projMat, viewMat, state, eyeIdx) {
 
     let m = state.m;
@@ -270,33 +369,97 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
     m.identity();
     m.translate(0,0,-6);
 
+    m.save(); // hips
+        m.translate(0, .5 - Math.sin(state.time * 5.3) * .3, 0);
+        m.rotateY( Math.sin(3 * state.time) *.2);
+        
+   
+
+
+        m.save() // torso
+            m.rotateX(.4 - Math.sin(3 * state.time) *.2);
+
+            m.save() // head
+                m.translate(0,1.1,0);
+                m.rotateZ( Math.sin(3 * state.time) *.1);
+                
+                m.scale(.2,.2,.1);
+                drawGeometry();
+            m.restore()
+        
+         
+
     for (let side = -1 ; side <= 1 ; side += 2) {
        let theta = Math.sin(3 * state.time) * side;
-       m.save();
-          m.translate(side * .3,0,0);
+    //    console.log(theta);
+    //    console.log(phase.check());
+       armPhase.check(theta);
+        m.save();
+          m.translate(side * .4,.7,0);
           m.rotateZ(theta);               // SHOULDER
           m.rotateY(-side + .5 * theta);
           m.translate(side * .3,0,0);
           m.save();
-             m.scale(.3,.05,.05);
-             gl.uniform3fv(state.uColorLoc, state.color0 );
-             gl.uniformMatrix4fv(state.uModelLoc, false, m.value() );
-             gl.drawArrays(gl.TRIANGLES, 0, cubeVertices.length / VERTEX_SIZE);
+            m.scale(.3,.05,.05);
+            drawGeometry();
           m.restore();
-
           m.translate(side * .3,0,0);
           m.rotateZ(theta);              // ELBOW
           m.translate(side * .3,0,0);
           m.save();
-             m.scale(.3,.05,.05);
-             gl.uniform3fv(state.uColorLoc, state.color0 );
-             gl.uniformMatrix4fv(state.uModelLoc, false, m.value() );
-             gl.drawArrays(gl.TRIANGLES, 0, cubeVertices.length / VERTEX_SIZE);
+            m.scale(.3,.05,.05);
+              
+            drawGeometry();
           m.restore();
+        m.restore();
+        m.save();
+    }
+    m.translate(0,.5,0);   
+    m.scale(.3,.3,.2);
+    drawGeometry();
+    m.restore();
+
+    for (let side = -1 ; side <= 1 ; side += 2) {
+        let theta = Math.sin(3 * state.time) * side;
+     
+        m.save();
+        m.translate(side * .25,0,0);
+        m.rotateY(3.14 * .5);
+        m.rotateZ(theta ); // leg
+        m.rotateZ(-side * 3.14 * .5 ) ;
+        m.translate(side * .5,0,0);
+        m.save();
+          
+          m.scale(.5,.05,.05);
+          drawGeometry();
+        m.restore();
+        m.translate(side * .3,0,0);
+        m.rotateZ(1 + theta);              // ELBOW
+        m.translate(side * .3,0,0);
+        m.save();
+          m.scale(.3,.05,.05);
+          drawGeometry();
+        m.restore();
+      m.restore();
+      m.save();
+
        m.restore();
+       
     }
 
+
+    m.scale(.2,.05,.1,);
+    
+    drawGeometry();
     m.restore();
+
+    m.restore();
+
+    function drawGeometry() {
+        gl.uniform3fv(state.uColorLoc, state.color0);
+        gl.uniformMatrix4fv(state.uModelLoc, false, m.value());
+        gl.drawArrays(gl.TRIANGLES, 0, cubeVertices.length / VERTEX_SIZE);
+    }
 }
 
 function onEndFrame(t, state) {
