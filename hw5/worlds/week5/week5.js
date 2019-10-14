@@ -380,7 +380,7 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
 
             m.save() // torso
                 m.rotateX(.2 - Math.sin(3 * state.time) *.05);
-                m.rotateY( Math.sin(3 * state.time) *.2);
+                m.rotateY( Math.sin(3 * state.time) *.4);
             
 
                 m.save() // head
@@ -444,9 +444,9 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
           m.scale(.5,.05,.05);
           drawGeometry();
         m.restore();
-        m.translate(side * .3,0,0);
-        m.rotateZ(1 + theta);              // ELBOW
-        m.translate(side * .3,0,0);
+        m.translate(side * .4,0,0);
+        m.rotateZ(1 + theta*.7);              // calf
+        m.translate(side * .4,0,0);
         m.save();
           m.scale(.3,.05,.05);
           drawGeometry();
