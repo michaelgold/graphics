@@ -449,14 +449,14 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
         m.translate(side * .5,0,0);
         m.save();
           
-          m.scale(.5,.05,.05);
+          m.scale(.4,.05,.05);
           drawGeometry();
         m.restore();
         m.translate(side * .4,0,0);
-        m.rotateZ(.55 + theta*.5);              // calf
+        m.rotateZ(1. + theta* .4);              // calf
         m.translate(side * .4,0,0);
         m.save();
-          m.scale(.3,.05,.05);
+          m.scale(.45,.05,.05);
           drawGeometry();
         m.restore();
       m.restore();
