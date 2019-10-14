@@ -370,7 +370,7 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
     m.translate(0,0,-6);
 
     m.save(); // hips
-        m.translate(0, .5 - Math.sin(state.time * 5.3) * .3, 0);
+        m.translate(0, .5 - Math.sin(state.time * 6) * .4, 0);
         m.rotateY( Math.sin(3 * state.time) *.2);
 
         m.save() // spine
@@ -380,7 +380,7 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
 
             m.save() // torso
                 m.rotateX(.2 - Math.sin(3 * state.time) *.05);
-                m.rotateY( Math.sin(3 * state.time) *.4);
+                m.rotateY( Math.sin(3 * state.time) *.2);
             
 
                 m.save() // head
@@ -436,7 +436,7 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
         m.save();
         m.translate(side * .25,0,0);
         m.rotateY(3.14 * .5);
-        m.rotateZ(theta ); // leg
+        m.rotateZ(theta - .3 ); // leg
         m.rotateZ(-side * 3.14 * .5 ) ;
         m.translate(side * .5,0,0);
         m.save();
@@ -445,7 +445,7 @@ function onDraw(t, projMat, viewMat, state, eyeIdx) {
           drawGeometry();
         m.restore();
         m.translate(side * .4,0,0);
-        m.rotateZ(1 + theta*.7);              // calf
+        m.rotateZ(.55 + theta*.5);              // calf
         m.translate(side * .4,0,0);
         m.save();
           m.scale(.3,.05,.05);
