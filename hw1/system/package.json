@@ -10,7 +10,7 @@
     "argparse": "^1.0.10",
     "chokidar": "3.0.2",
     "codemirror": "5.48.4",
-    "express": "4.16.4",
+    "express": "4.17.3",
     "file-saver": "^2.0.2",
     "ws": "^6.2.1"
   },
